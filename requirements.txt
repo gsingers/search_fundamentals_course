@@ -1,0 +1,11 @@
+flask
+opensearch-py
+ipython
+click
+lxml
+kaggle
+requests
+urljoin
+graphviz
+pandas
+numexpr
