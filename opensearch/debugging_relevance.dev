@@ -1,7 +1,7 @@
-# If you deleted your index (searchml_test), see the bottom of this file to recreate it.
+# If you deleted your index (search_fun_test), see the bottom of this file to recreate it.
 
 # Simple explain of query:
-GET /searchml_test/_validate/query?explain=true
+GET /search_fun_test/_validate/query?explain=true
 {
   "query": {
       "term":{
@@ -10,7 +10,7 @@ GET /searchml_test/_validate/query?explain=true
   }
 }
 # slightly more complex
-GET /searchml_test/_validate/query?explain=true
+GET /search_fun_test/_validate/query?explain=true
 {
   "query": {
       "query_string":{
@@ -20,7 +20,7 @@ GET /searchml_test/_validate/query?explain=true
 }
 
 # Bit more complex explain of query
-GET /searchml_test/_validate/query?explain=true
+GET /search_fun_test/_validate/query?explain=true
 {
   "query": {
       "bool":{
@@ -52,7 +52,7 @@ GET /_analyze
 }
 
 # Explain as a query
-GET /searchml_test/_search?explain=true
+GET /search_fun_test/_search?explain=true
 {
   "query": {
       "bool":{
@@ -66,7 +66,7 @@ GET /searchml_test/_search?explain=true
 }
 
 # Explain a particular doc
-POST /searchml_test/_explain/doc_a
+POST /search_fun_test/_explain/doc_a
 {
   "query": {
       "bool":{
@@ -111,11 +111,11 @@ GET /bbuy_queries/_search
 }
 
 ##############
-##  Creaate the searchml_test index using the documents.  You only need to re-run this if you deleted searchml_test or want to start fresh
+##  Creaate the search_fun_test index using the documents.  You only need to re-run this if you deleted search_fun_test or want to start fresh
 ##
 ##############
 ##Create our index
-PUT /searchml_test
+PUT /search_fun_test
 {
   "settings": {
         "index": {
@@ -136,7 +136,7 @@ PUT /searchml_test
 }
 
 ## Index some documents
-PUT /searchml_test/_doc/doc_a
+PUT /search_fun_test/_doc/doc_a
 {
   "id": "doc_a",
   "title": "Fox and Hounds",
@@ -145,7 +145,7 @@ PUT /searchml_test/_doc/doc_a
   "in_stock": "true",
   "category": "childrens"}
 
-PUT /searchml_test/_doc/doc_b
+PUT /search_fun_test/_doc/doc_b
 {
     "id": "doc_b",
     "title": "Fox wins championship",
@@ -154,7 +154,7 @@ PUT /searchml_test/_doc/doc_b
     "in_stock": "true",
     "category": "sports"}
 
-PUT /searchml_test/_doc/doc_c
+PUT /search_fun_test/_doc/doc_c
 {
     "id": "doc_c",
     "title": "Lead Paint Removal",
@@ -163,7 +163,7 @@ PUT /searchml_test/_doc/doc_c
     "in_stock": "false",
     "category": "instructional"}
 
-PUT /searchml_test/_doc/doc_d
+PUT /search_fun_test/_doc/doc_d
 {
         "id": "doc_d",
         "title": "The Three Little Pigs Revisted",

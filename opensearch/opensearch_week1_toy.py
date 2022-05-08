@@ -25,10 +25,10 @@ print(client.cat.health())
 print(client.cat.indices())
 
 # If you still have your documents from the Dev Tools test, we should be able to check them here:
-print(client.cat.count("searchml_test", params={"v": "true"}))
+print(client.cat.count("search_fun_test", params={"v": "true"}))
 
 # Create an index with non-default settings.
-index_name = 'searchml_revisited'
+index_name = 'search_fun_revisited'
 index_body = {
     'settings': {
         'index': {
@@ -92,7 +92,7 @@ print(client.cat.count(index_name, params={"v": "true"}))
 print(client.indices.get_mapping(index_name))
 
 # Create a new index, this time with different mappings
-index_name = 'searchml_revisited_custom_mappings'
+index_name = 'search_fun_revisited_custom_mappings'
 index_body = {
     'settings': {
         'index': {

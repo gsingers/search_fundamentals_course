@@ -1,6 +1,6 @@
-# If you deleted your index (searchml_test), see the bottom of this file to recreate it.
+# If you deleted your index (search_fun_test), see the bottom of this file to recreate it.
 # Rescoring: first run the baseline
-GET searchml_test/_search
+GET search_fun_test/_search
 {
   "query": {
       "bool": {
@@ -15,7 +15,7 @@ GET searchml_test/_search
 }
 
 # Rework week 1 function score as a rescore
-POST searchml_test/_search
+POST search_fun_test/_search
 {
   "query": {
       "bool": {
@@ -47,7 +47,7 @@ POST searchml_test/_search
 
 # Double cascade!
 # Baseline:
-POST searchml_test/_search
+POST search_fun_test/_search
 {
   "query": {
       "match_all": {}
@@ -55,7 +55,7 @@ POST searchml_test/_search
 }
 
 # Rework week 1 function score as a rescore
-POST searchml_test/_search
+POST search_fun_test/_search
 {
   "query": {
       "match_all": {}
@@ -94,11 +94,11 @@ POST searchml_test/_search
 }
 
 ##############
-##  Creaate the searchml_test index using the documents.  You only need to re-run this if you deleted searchml_test or want to start fresh
+##  Creaate the search_fun_test index using the documents.  You only need to re-run this if you deleted search_fun_test or want to start fresh
 ##
 ##############
 ##Create our index
-PUT /searchml_test
+PUT /search_fun_test
 {
   "settings": {
         "index": {
@@ -119,7 +119,7 @@ PUT /searchml_test
 }
 
 ## Index some documents
-PUT /searchml_test/_doc/doc_a
+PUT /search_fun_test/_doc/doc_a
 {
   "id": "doc_a",
   "title": "Fox and Hounds",
@@ -128,7 +128,7 @@ PUT /searchml_test/_doc/doc_a
   "in_stock": "true",
   "category": "childrens"}
 
-PUT /searchml_test/_doc/doc_b
+PUT /search_fun_test/_doc/doc_b
 {
     "id": "doc_b",
     "title": "Fox wins championship",
@@ -137,7 +137,7 @@ PUT /searchml_test/_doc/doc_b
     "in_stock": "true",
     "category": "sports"}
 
-PUT /searchml_test/_doc/doc_c
+PUT /search_fun_test/_doc/doc_c
 {
     "id": "doc_c",
     "title": "Lead Paint Removal",
@@ -146,7 +146,7 @@ PUT /searchml_test/_doc/doc_c
     "in_stock": "false",
     "category": "instructional"}
 
-PUT /searchml_test/_doc/doc_d
+PUT /search_fun_test/_doc/doc_d
 {
         "id": "doc_d",
         "title": "The Three Little Pigs Revisted",
