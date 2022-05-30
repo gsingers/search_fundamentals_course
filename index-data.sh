@@ -44,8 +44,11 @@ if [ $? -ne 0 ] ; then
   exit 2
 fi
 
-echo "Indexing queries data"
-nohup python index_queries.py -s "$DATASETS_DIR/train.csv" > "$LOGS_DIR/index_queries.log" &
-if [ $? -ne 0 ] ; then
-  exit 2
+# This is a no-op in Week 1.  It will be used in week2
+if [ -f index_queries.py ]; then
+  echo "Indexing queries data"
+  nohup python index_queries.py -s "$DATASETS_DIR/train.csv" > "$LOGS_DIR/index_queries.log" &
+  if [ $? -ne 0 ] ; then
+    exit 2
+  fi
 fi

@@ -8,7 +8,12 @@
             "smarter_hyphens_filter",
             "lowercase"
           ]
-        }
+        },
+        "trigram": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase","shingle"]
+          }
       },
       "tokenizer": {
         "smarter_hyphens_tokenizer": {
@@ -21,10 +26,11 @@
       },
       "filter": {
         "smarter_hyphens_filter": {
-          "type": "word_delimiter_graph",
-          "catenate_words": true,
-          "catenate_all": true
-        }
+          "TODO": "DEFINE ME"
+        },
+        "shingle": {
+            "TODO": "DEFINE ME"
+          }
       }
     }
   },
@@ -241,16 +247,14 @@
           "keyword": {
             "type": "keyword",
             "ignore_above": 2048
-          },
-          "hyphens": {
-            "type": "text",
-            "analyzer": "smarter_hyphens"
-          },
-          "suggest": {
-            "type": "completion"
           }
-
         }
+      },
+      "REPLACE WITH SUGGEST": {
+        "REPLACE": "REPLACE"
+      },
+      "canonical": {
+        "type": "text"
       },
       "onSale": {
         "type": "boolean"

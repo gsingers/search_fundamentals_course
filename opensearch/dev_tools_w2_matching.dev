@@ -1,0 +1,35 @@
+GET bbuy_products/_search
+{
+  "query": {
+    "match": {
+      "name": ""
+    }
+
+  },
+  "_source": "name"
+}
+
+GET bbuy_products/_search
+{
+  "query": {
+    "match": {
+      "name.hyphens": ""
+    }
+
+  },
+  "_source": "name"
+}
+
+# Fuzzy matching template
+GET bbuy_products/_search
+{
+  "query": {
+    "match": {
+      "name":{
+        "query": "iphone4"
+      }
+
+    }
+  },
+  "_source": "name"
+}

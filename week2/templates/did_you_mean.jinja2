@@ -1,0 +1,9 @@
+<div>
+  {% if (search_response.suggest.phrase_suggest or search_response.suggest.term_suggest) and (search_response.suggest.phrase_suggest|length > 0 or search_response.suggest.term_suggest|length > 0) and (search_response.suggest.phrase_suggest[0].options|length  > 0 or search_response.suggest.term_suggest[0].options|length  > 0 ) %}Did you mean?{% endif %}
+  {% if search_response.suggest.phrase_suggest and search_response.suggest.phrase_suggest|length > 0 and search_response.suggest.phrase_suggest[0].options|length  > 0 %}
+    <label>Phrase suggestions</label>: {{ search_response.suggest.phrase_suggest[0].options[0].highlighted }}
+  {% endif %}
+  {% if search_response.suggest.term_suggest and search_response.suggest.term_suggest|length > 0 and search_response.suggest.term_suggest[0].options|length  > 0 %}
+    <label>Term suggestions</label>: {{ search_response.suggest.term_suggest[0].options[0].text }}
+  {% endif %}
+</div>

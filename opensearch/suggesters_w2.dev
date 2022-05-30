@@ -1,0 +1,202 @@
+#######
+#
+# Setup
+#
+#######
+DELETE /suggesters_index
+PUT /suggesters_index
+{
+  "settings": {
+      "analysis": {
+            "analyzer": {
+              "trigram": {
+                  "type": "custom",
+                  "tokenizer": "standard",
+                  "filter": ["lowercase","shingle"]
+                }
+            },
+            "filter": {
+              "shingle": {
+                  "type": "shingle",
+                  "min_shingle_size": 2,
+                  "max_shingle_size": 3
+                }
+            }
+          },
+        "index": {
+          "query": {
+              "default_field": "body"
+          }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "title": {
+              "type": "text", "analyzer": "english",
+              "fields":{
+                "trigrams":{
+                  "type": "text",
+                  "analyzer": "trigram"
+                }
+              }
+            },
+            "completion":{
+                  "type": "completion"
+            },
+            "body": {"type": "text", "analyzer": "english"},
+            "in_stock": {"type": "boolean"},
+            "category": {"type": "keyword", "ignore_above": "256"},
+            "price": {"type": "float"}
+        }
+    }
+}
+
+
+## Index some documents
+## Index some documents
+PUT /suggesters_index/_doc/doc_a
+{
+  "id": "doc_a",
+  "title": "Fox and Hounds",
+  "completion": [{"input":"Fox and Hounds", "weight": 10}, {"input":"Red Fox", "weight":5}, {"input":"Brown Dogs", "weight": 5}],
+  "body": "The quick red fox jumped over the lazy brown dogs.",
+  "price": "5.99",
+  "in_stock": "true",
+  "category": "childrens"}
+
+PUT /suggesters_index/_doc/doc_b
+{
+    "id": "doc_b",
+    "title": "Fox wins championship",
+    "completion": [{"input":"Fox wins championship", "weight": 10}],
+    "body": "Wearing all red, the Fox jumped out to a lead in the race over the Dog.",
+    "price": "15.13",
+    "in_stock": "true",
+    "category": "sports"}
+
+PUT /suggesters_index/_doc/doc_c
+{
+    "id": "doc_c",
+    "title": "Lead Paint Removal",
+    "completion": [{"input":"Lead Paint Removal", "weight": 10}, {"input":"removal of lead paint", "weight": 5}],
+    "body": "All lead must be removed from the brown and red paint.",
+    "price": "150.21",
+    "in_stock": "false",
+    "category": "instructional"}
+
+PUT /suggesters_index/_doc/doc_d
+{
+        "id": "doc_d",
+        "title": "The Three Little Pigs Revisted",
+        "completion": [{"input":"The Three Little Pigs Revisited", "weight": 10}, {"input":"three little pigs", "weight": 5}, {"input":"3 little pigs", "weight": 5}, {"input":"3 piggies", "weight": 5}],
+        "price": "3.51",
+        "in_stock": "true",
+        "body": "The big, bad wolf huffed and puffed and blew the house down. The end.",
+        "category": "childrens"}
+
+###########
+
+# Term suggestion:
+GET /suggesters_index/_search
+{
+  "suggest": {
+    "text": "huonds",
+    "term_suggest":{
+      "term":{
+        "field":"title",
+        "min_word_length": 2,
+        "suggest_mode": "popular"
+      }
+    }
+  }
+}
+
+# Trigram Analysis:
+POST /suggesters_index/_analyze
+{
+  "analyzer": "trigram",
+  "text": ["Top Gun Gameboy Advance"]
+
+}
+
+
+
+# Phrase Suggestion 1
+GET /suggesters_index/_search
+{
+  "suggest": {
+    "text": "Thrie lattle pegs",
+    "phrase_suggest":{
+      "phrase":{
+        "field":"title.trigrams",
+        "direct_generator": [ {
+          "field": "title.trigrams",
+          "min_word_length": 2,
+          "suggest_mode": "popular"
+        } ],
+        "highlight": {
+          "pre_tag": "<em>",
+          "post_tag": "</em>"
+        }
+      }
+    }
+  }
+}
+
+# Phrase Suggestion 2: max errors
+GET /suggesters_index/_search
+{
+  "suggest": {
+    "text": "Thrie lattle pegs",
+    "phrase_suggest":{
+      "phrase":{
+        "field":"title.trigrams",
+        "max_errors": 3,
+        "direct_generator": [ {
+          "field": "title.trigrams",
+          "min_word_length": 2,
+          "suggest_mode": "popular"
+        } ],
+        "highlight": {
+          "pre_tag": "<em>",
+          "post_tag": "</em>"
+        }
+      }
+    }
+  }
+}
+
+# Phrase Suggestion 3: collation
+GET /suggesters_index/_search
+{
+  "suggest": {
+    "text": "Thrie lattle pegs",
+    "phrase_suggest":{
+      "phrase":{
+        "field":"title.trigrams",
+        "max_errors": 3,
+        "direct_generator": [ {
+          "field": "title.trigrams",
+          "min_word_length": 2,
+          "suggest_mode": "popular"
+        } ],
+        "collate": {
+          "query": {
+            "source" : {
+              "match_phrase": {
+                "{{field_name}}" : "{{suggestion}}"
+              }
+            }
+          },
+          "params": {"field_name" : "title"},
+          "prune": true
+        },
+        "highlight": {
+          "pre_tag": "<em>",
+          "post_tag": "</em>"
+        }
+      }
+    }
+  }
+}
+

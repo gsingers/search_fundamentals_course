@@ -5,10 +5,9 @@ from flask import (
     Blueprint, redirect, render_template, request, url_for, current_app
 )
 
-from week2.opensearch import get_opensearch
+from week2_finished.opensearch import get_opensearch
 
-import week2.utilities.query_utils as qu
-import week2.utilities.ltr_utils as lu
+import week2_finished.utilities.query_utils as qu
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -56,6 +55,21 @@ def process_filters(filters_input):
 
     return filters, display_filters, applied_filters
 
+@bp.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    results = {}
+    if request.method == 'GET':  # a query has been submitted
+        prefix = request.args.get("prefix")
+        print(f"Prefix: {prefix}")
+        if prefix is not None:
+            type = request.args.get("type", "queries") # If type == queries, this is an autocomplete request, else if products, it's an instant search request.
+            ##### W2, L3, S1
+            search_response = None
+            print("TODO: implement autocomplete AND instant search")
+            if (search_response and search_response['suggest']['autocomplete'] and search_response['suggest']['autocomplete'][0]['length'] > 0): # just a query response
+                results = search_response['suggest']['autocomplete'][0]['options']
+    print(f"Results: {results}")
+    return {"completions": results}
 
 @bp.route('/query', methods=['GET', 'POST'])
 def query():
@@ -69,15 +83,17 @@ def query():
     filters = None
     sort = "_score"
     sortDir = "desc"
-    model = "simple"
-    # TODO: Make these parameters
-    ltr_store_name = "week2"
-    ltr_model_name = "ltr_model"
+
+    autocompleteSelect = "queries"
     explain = False
+    prior_clicks = current_app.config.get("priors_gb")
     if request.method == 'POST':  # a query has been submitted
         user_query = request.form['query']
         if not user_query:
             user_query = "*"
+        autocompleteSelect = request.form["autocompleteSelect"]
+        if not autocompleteSelect:
+            autocompleteSelect = "queries"
         sort = request.form["sort"]
         if not sort:
             sort = "_score"
@@ -87,47 +103,27 @@ def query():
         explain_val = request.form.get("explain", "false")
         if explain_val == "true":
             explain = True
-        model = request.form.get("model", "simple")
-        click_prior = get_click_prior(user_query)
 
-        if model == "simple_LTR":
-            query_obj = qu.create_simple_baseline(user_query, click_prior, [], sort, sortDir, size=500)  # We moved create_query to a utility class so we could use it elsewhere.
-            query_obj = lu.create_rescore_ltr_query(user_query, query_obj, click_prior, ltr_model_name, ltr_store_name,
-                                                    rescore_size=500, main_query_weight=0)
-            print("Simple LTR q: %s" % query_obj)
-        elif model == "ht_LTR":
-            query_obj = qu.create_query(user_query, click_prior, [], sort, sortDir, size=500)  # We moved create_query to a utility class so we could use it elsewhere.
-            query_obj = lu.create_rescore_ltr_query(user_query, query_obj, click_prior, ltr_model_name, ltr_store_name,
-                                                    rescore_size=500, main_query_weight=0)
-            print("LTR q: %s" % query_obj)
-        elif model == "hand_tuned":
-            query_obj = qu.create_query(user_query, click_prior, [], sort, sortDir, size=100)  # We moved create_query to a utility class so we could use it elsewhere.
-            print("Hand tuned q: %s" % query_obj)
-        else:
-            query_obj = qu.create_simple_baseline(user_query, click_prior, [], sort, sortDir, size=100)  # We moved create_query to a utility class so we could use it elsewhere.
-            print("Plain ol q: %s" % query_obj)
+        query_obj = qu.create_query(user_query,  [], sort, sortDir, size=20)  # We moved create_query to a utility class so we could use it elsewhere.
+        ##### W2, L1, S2
+
+        ##### W2, L2, S2
+        print("Plain ol q: %s" % query_obj)
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
         filters_input = request.args.getlist("filter.name")
         sort = request.args.get("sort", sort)
         sortDir = request.args.get("sortDir", sortDir)
         explain_val = request.args.get("explain", "false")
-        click_prior = get_click_prior(user_query)
         if explain_val == "true":
             explain = True
         if filters_input:
             (filters, display_filters, applied_filters) = process_filters(filters_input)
-        model = request.args.get("model", "simiple")
-        if model == "simple_LTR":
-            query_obj = qu.create_simple_baseline(user_query, click_prior, filters, sort, sortDir, size=500)
-            query_obj = lu.create_rescore_ltr_query(user_query, query_obj, click_prior, ltr_model_name, ltr_store_name, rescore_size=500)
-        elif model == "ht_LTR":
-            query_obj = qu.create_query(user_query, click_prior, filters, sort, sortDir, size=100)
-            query_obj = lu.create_rescore_ltr_query(user_query, query_obj, click_prior, ltr_model_name, ltr_store_name, rescore_size=100)
-        elif model == "hand_tuned":
-            query_obj = qu.create_query(user_query, click_prior, filters, sort, sortDir, size=100)
-        else:
-            query_obj = qu.create_simple_baseline(user_query, click_prior, filters, sort, sortDir, size=100)
+        query_obj = qu.create_query(user_query,  filters, sort, sortDir, size=20)
+        #### W2, L1, S2
+
+        ##### W2, L2, S2
+
     else:
         query_obj = qu.create_query("*", "", [], sort, sortDir, size=100)
 
@@ -139,29 +135,7 @@ def query():
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
-                               sort=sort, sortDir=sortDir, model=model, explain=explain)
+                               sort=sort, sortDir=sortDir, explain=explain, autocompleteSelect=autocompleteSelect)
     else:
         redirect(url_for("index"))
-
-
-def get_click_prior(user_query):
-    click_prior = ""
-    if current_app.config.get("priors_gb"):
-        try:
-            prior_doc_ids = None
-            prior_doc_id_weights = None
-            query_times_seen = 0  # careful here
-            prior_clicks_for_query = None
-            prior_clicks_for_query = current_app.config["priors_gb"].get_group(user_query)
-            if prior_clicks_for_query is not None and len(prior_clicks_for_query) > 0:
-                prior_doc_ids = prior_clicks_for_query.sku.drop_duplicates()
-                prior_doc_id_weights = prior_clicks_for_query.sku.value_counts()  # histogram gives us the click counts for all the doc_ids
-                query_times_seen = prior_clicks_for_query.sku.count()
-                click_prior = qu.create_prior_queries(prior_doc_ids, prior_doc_id_weights, query_times_seen)
-        except KeyError as ke:
-            pass
-            # nothing to do here, we just haven't seen this query before in our training set
-    print("prior: %s" % click_prior)
-    return click_prior
-
 

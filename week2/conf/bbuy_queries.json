@@ -1,6 +1,22 @@
 {
   "settings": {
-    "index.refresh_interval": "5s"
+    "index.refresh_interval": "5s",
+    "analysis": {
+      "analyzer": {
+        "trigram": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase","shingle"]
+          }
+      },
+      "filter": {
+        "shingle": {
+            "type": "shingle",
+            "min_shingle_size": 2,
+            "max_shingle_size": 3
+          }
+      }
+    }
   },
   "mappings": {
     "properties": {
@@ -25,10 +41,6 @@
           }
         }
       },
-      "click_time": {
-        "type": "date",
-        "format": "yyyy-MM-dd HH:mm:ss.S||yyyy-MM-dd HH:mm:ss.SS||yyyy-MM-dd HH:mm:ss.SSSZ||yyyy-MM-dd HH:mm:ss.SSS||yyyy-MM-dd HH:mm:ssZ||yyyy-MM-dd||epoch_millis||strict_date_optional_time"
-      },
       "query": {
         "type": "text",
         "fields": {
@@ -42,20 +54,13 @@
           }
         }
       },
-      "query_time": {
-        "type": "date",
-        "format": "yyyy-MM-dd HH:mm:ss.S||yyyy-MM-dd HH:mm:ss.SS||yyyy-MM-dd HH:mm:ss.SSSZ||yyyy-MM-dd HH:mm:ss.SSS||yyyy-MM-dd HH:mm:ssZ||yyyy-MM-dd||epoch_millis||strict_date_optional_time"
+      "REPLACE WITH SUGGEST AND CANONICAL": {
+        "REPLACE": "REPLACE"
+      },
+      "canonical": {
+        "type": "text"
       },
       "sku": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "user": {
         "type": "text",
         "fields": {
           "keyword": {

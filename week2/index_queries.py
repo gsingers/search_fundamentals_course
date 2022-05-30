@@ -44,7 +44,7 @@ def main(source_file: str, index_name: str):
     df.drop("click_time", axis=1, inplace=True)
     df.drop("query_time", axis=1, inplace=True)
     df.drop("user", axis=1, inplace=True)
-    
+
     # Do some clean up work on our data for indexing.
     # Keep in mind, the main thing we are trying to build here is a good suggester, as we are not using these queries
     # for anything else in this class.  If you want to see how to use queries to make your ranking better,
