@@ -47,6 +47,10 @@ You will also find several supporting directories and files for [Docker](https:/
 2. Accept all of the [kaggle competition rules](https://www.kaggle.com/c/acm-sf-chapter-hackathon-big/rules) then run the download data script:
 
         ./download-data.sh
+3. Verify your data is in the right location: 
+       
+        ls /workspace/datasets
+4. You should see:  `popular_skus.py  product_data  test.csv  train.csv`
 
 
 
