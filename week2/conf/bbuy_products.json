@@ -250,7 +250,7 @@
           }
         }
       },
-      "REPLACE WITH SUGGEST": {
+      "TODO: REPLACE WITH SUGGEST": {
         "REPLACE": "REPLACE"
       },
       "canonical": {

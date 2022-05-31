@@ -5,9 +5,9 @@ from flask import (
     Blueprint, redirect, render_template, request, url_for, current_app
 )
 
-from week2_finished.opensearch import get_opensearch
+from week2.opensearch import get_opensearch
 
-import week2_finished.utilities.query_utils as qu
+import week2.utilities.query_utils as qu
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 

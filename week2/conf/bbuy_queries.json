@@ -54,7 +54,7 @@
           }
         }
       },
-      "REPLACE WITH SUGGEST AND CANONICAL": {
+      "TODO: REPLACE WITH SUGGEST": {
         "REPLACE": "REPLACE"
       },
       "canonical": {
