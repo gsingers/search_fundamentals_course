@@ -1,35 +1,29 @@
 <div id="search-box" class="bg-blue-500 p-4">
-<script type="application/javascript">
-  countries = ["US", "Canada"]
-  ac = new Autocomplete('#autocomplete', {
-  search: input => {
-    if (input.length < 1) { return [] }
-    return countries.filter(country => {
-      return country.toLowerCase()
-        .startsWith(input.toLowerCase())
-    })
-  }
-})
-</script>
   <form method="post" action="{{ url_for('search.query') }}" id="searchForm">
     <div class="sm:flex">
-    div id="autocomplete" class="autocomplete">
-      <input class="flex-grow w-full sm:w-auto autocomplete-input" name="query" id="query" type="search" placeholder="Enter a search" value="{{ query|e }}" required>
-      <ul class="autocomplete-result-list"></ul>
-    </div>
-    <input type="submit" value="Query" class="hidden">
-    <div class="sm:ml-2 pt-2 sm:pt-0">
-      <select name="sort" id="sortControl">
-        <option value="_score" {% if sort == "_score" %}selected{% endif %} >Relevance</option>
-        <option value="name.keyword" {% if sort == "name.keyword" %}selected{% endif %}>Name</option>
-        <option value="salesRankShortTerm" {% if sort == "salesRankShortTerm" %}selected{% endif %}>Popularity</option>
-        <option value="regularPrice" {% if sort == "regularPrice" %}selected{% endif %}>Price</option>
-      </select>
-      <select name="sortDir" id="sortDirControl">
-        <option value="asc" {% if sortDir == "asc" %}selected{% endif %}>Ascending</option>
-        <option value="desc" {% if sortDir == "desc" %}selected{% endif %}>Descending</option>
-      </select>
-    </div>
+      <div id="autocomplete" class="flex-grow w-full sm:w-auto autocomplete">
+        <input class="autocomplete-input" name="query" id="query" type="search"
+               placeholder="Enter a query" aria-label="Enter a query" value="{{ query|e }}" required>
+        <ul class="autocomplete-result-list"></ul>
+      </div>
+      <input type="submit" value="Query" class="hidden">
+      <div class="sm:ml-2 pt-2 sm:pt-0">
+        <select name="autocompleteSelect" id="acControl">
+          <option value="products" {% if autocompleteSelect == "products" %}selected{% endif %}>Products</option>
+          <option value="queries" {% if autocompleteSelect == "queries" %}selected{% endif %}>Queries</option>
+        </select>
+        <select name="sort" id="sortControl">
+          <option value="_score" {% if sort == "_score" %}selected{% endif %}>Relevance</option>
+          <option value="name.keyword" {% if sort == "name.keyword" %}selected{% endif %}>Name</option>
+          <option value="salesRankShortTerm" {% if sort == "salesRankShortTerm" %}selected{% endif %}>Popularity
+          </option>
+          <option value="regularPrice" {% if sort == "regularPrice" %}selected{% endif %}>Price</option>
+        </select>
+        <select name="sortDir" id="sortDirControl">
+          <option value="asc" {% if sortDir == "asc" %}selected{% endif %}>Ascending</option>
+          <option value="desc" {% if sortDir == "desc" %}selected{% endif %}>Descending</option>
+        </select>
+      </div>
     </div>
   </form>
 </div>
@@ -37,6 +31,7 @@
 <script>
   const searchForm = document.getElementById('searchForm')
   const sortControl = document.getElementById('sortControl');
+  const acControl = document.getElementById('acControl');
   const sortDirControl = document.getElementById('sortDirControl');
   sortControl.addEventListener('change', () => {
     searchForm.submit();
@@ -44,5 +39,47 @@
   sortDirControl.addEventListener('change', () => {
     searchForm.submit();
   })
-  
+  const baseUrl = "{{ url_for('search.autocomplete') }}"
+  let autocompleteElt = document.getElementById('autocomplete');
+  ac = new Autocomplete(autocompleteElt, {
+    search: input => {
+      const acType = acControl.value;
+      console.log(acType)
+      const url = `${baseUrl}?prefix=${encodeURI(input)}&type=${acType}`
+      console.log("Hitting: " + url);
+      return new Promise(resolve => {
+        if (input.length < 3) {
+          return resolve([])
+        }
+        console.log("Executing fetch");
+        fetch(url)
+            .then(response => {
+              let data = response.json();
+              console.log(data)
+              return data
+            })
+            .then(data => {
+              console.log("The data:")
+              console.log(data.completions);
+              resolve(data.completions);
+            })
+      })
+    },
+
+    // Wikipedia returns a format like this:
+    //
+    // {
+    //   pageid: 12345,
+    //   title: 'Article title',
+    //   ...
+    // }
+    //
+    // We want to display the title
+    getResultValue: result => result._source.canonical,
+
+    // Open the selected article in
+    // a new window
+
+  })
+
 </script>

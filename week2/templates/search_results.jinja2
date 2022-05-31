@@ -6,7 +6,7 @@
 
 {% block content %}
   <div class="p-4">
-  <div id="did-you-mean" class="hidden">DYM goes here</div>
+  <div id="did-you-mean">{% include 'did_you_mean.jinja2' %}</div>
   {% if display_filters%}
     <div id="applied-filters">{% include 'display_filters.jinja2' %}</div>
   {% endif %}
