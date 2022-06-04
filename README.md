@@ -1,6 +1,6 @@
 # Welcome to Search Fundamentals
 
-Search with Machine Learning is a two week class taught by Grant Ingersoll and Daniel Tunkelang and is focused on helping students
+Search Fundamentals is a two week class taught by Grant Ingersoll and Daniel Tunkelang and is focused on helping students
 quickly get up to speed on search by teaching the basics of search like indexing, querying, faceting/aggregations, spell checking, typeahead autocomplete and highlighting.
 
 The class is a hands-on project-driven course where students will work with real data and the [Opensearch](https://opensearch.com)/Elasticsearch ecosystem.
