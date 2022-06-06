@@ -25,7 +25,10 @@ print(client.cat.health())
 print(client.cat.indices())
 
 # If you still have your documents from the Dev Tools test, we should be able to check them here:
-print(client.cat.count("search_fun_test", params={"v": "true"}))
+try:
+    print(client.cat.count("search_fun_test", params={"v": "true"}))
+except:
+    print("search_fun_test doesn't exist, that's OK")
 
 # Create an index with non-default settings.
 index_name = 'search_fun_revisited'
@@ -40,7 +43,6 @@ index_body = {
 }
 
 client.indices.create(index_name, body=index_body)
-
 
 # Add our sample document to the index.
 docs = [
@@ -113,7 +115,6 @@ index_body = {
 }
 
 client.indices.create(index_name, body=index_body)
-
 
 for doc in docs:
     doc_id = doc["id"]
@@ -279,8 +280,8 @@ query = {
 }
 
 client.search(
-body = query,
-index = index_name
+    body=query,
+    index=index_name
 )
 
 ######################################
@@ -293,17 +294,15 @@ for doc in docs:
     doc_id = doc["id"]
 print("Indexing {}".format(doc_id))
 response = client.delete(
-index = index_name,
-id = doc_id,
+    index=index_name,
+    id=doc_id,
 )
 print('\n\tResponse:')
 print(response)
 
 # If at any time you want to start over, run this command to delete the index and then you can start from the toop
 # Delete the index.
-response = client.indices.delete(
-index = index_name
-)
+response = client.indices.delete(index=index_name)
 
 print('\nDeleting index:')
 print(response)
