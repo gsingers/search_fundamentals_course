@@ -15,43 +15,42 @@ logging.basicConfig(format='%(levelname)s:%(message)s')
 
 # NOTE: this is not a complete list of fields.  If you wish to add more, put in the appropriate XPath expression.
 # TODO: is there a way to do this using XPath/XSL Functions so that we don't have to maintain a big list?
-mappings = [
-    "sku/text()", "sku", # SKU is the unique ID, productIds can have multiple skus
-    "productId/text()", "productId",
-    "name/text()", "name",
-    "type/text()", "type",
-    "regularPrice/text()", "regularPrice",
-    "salePrice/text()", "salePrice",
-    "onSale/text()", "onSale",
-    "salesRankShortTerm/text()", "salesRankShortTerm",
-    "salesRankMediumTerm/text()", "salesRankMediumTerm",
-    "salesRankLongTerm/text()", "salesRankLongTerm",
-    "bestSellingRank/text()", "bestSellingRank",
-    "url/text()", "url",
-    "categoryPath/*/name/text()", "categoryPath",  # Note the match all here to get the subfields
-    "categoryPath/*/id/text()", "categoryPathIds",  # Note the match all here to get the subfields
-    "categoryPath/category[last()]/id/text()", "categoryLeaf",
-    "count(categoryPath/*/name)", "categoryPathCount",
-    "customerReviewCount/text()", "customerReviewCount",
-    "customerReviewAverage/text()", "customerReviewAverage",
-    "inStoreAvailability/text()", "inStoreAvailability",
-    "onlineAvailability/text()", "onlineAvailability",
-    "releaseDate/text()", "releaseDate",
-    "shortDescription/text()", "shortDescription",
-    "class/text()", "class",
-    "classId/text()", "classId",
-    "department/text()", "department",
-    "departmentId/text()", "departmentId",
-    "bestBuyItemId/text()", "bestBuyItemId",
-    "description/text()", "description",
-    "manufacturer/text()", "manufacturer",
-    "modelNumber/text()", "modelNumber",
-    "image/text()", "image",
-    "longDescription/text()", "longDescription",
-    "longDescriptionHtml/text()", "longDescriptionHtml",
-    "features/*/text()", "features"  # Note the match all here to get the subfields
-
-]
+mappings = {
+    "sku/text()": "sku", # SKU is the unique ID, productIds can have multiple skus
+    "productId/text()": "productId",
+    "name/text()": "name",
+    "type/text()": "type",
+    "regularPrice/text()": "regularPrice",
+    "salePrice/text()": "salePrice",
+    "onSale/text()": "onSale",
+    "salesRankShortTerm/text()": "salesRankShortTerm",
+    "salesRankMediumTerm/text()": "salesRankMediumTerm",
+    "salesRankLongTerm/text()": "salesRankLongTerm",
+    "bestSellingRank/text()": "bestSellingRank",
+    "url/text()": "url",
+    "categoryPath/*/name/text()": "categoryPath",  # Note the match all here to get the subfields
+    "categoryPath/*/id/text()": "categoryPathIds",  # Note the match all here to get the subfields
+    "categoryPath/category[last()]/id/text()": "categoryLeaf",
+    "count(categoryPath/*/name)": "categoryPathCount",
+    "customerReviewCount/text()": "customerReviewCount",
+    "customerReviewAverage/text()": "customerReviewAverage",
+    "inStoreAvailability/text()": "inStoreAvailability",
+    "onlineAvailability/text()": "onlineAvailability",
+    "releaseDate/text()": "releaseDate",
+    "shortDescription/text()": "shortDescription",
+    "class/text()": "class",
+    "classId/text()": "classId",
+    "department/text()": "department",
+    "departmentId/text()": "departmentId",
+    "bestBuyItemId/text()": "bestBuyItemId",
+    "description/text()": "description",
+    "manufacturer/text()": "manufacturer",
+    "modelNumber/text()": "modelNumber",
+    "image/text()": "image",
+    "longDescription/text()": "longDescription",
+    "longDescriptionHtml/text()": "longDescriptionHtml",
+    "features/*/text()": "features"  # Note the match all here to get the subfields
+}
 
 
 def get_opensearch():
@@ -81,9 +80,7 @@ def main(source_dir: str, index_name: str):
         docs = []
         for child in children:
             doc = {}
-            for idx in range(0, len(mappings), 2):
-                xpath_expr = mappings[idx]
-                key = mappings[idx + 1]
+            for xpath_expr, key in mappings.items():
                 doc[key] = child.xpath(xpath_expr)
             # print(doc)
             if not 'productId' in doc or len(doc['productId']) == 0:
