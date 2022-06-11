@@ -17,7 +17,7 @@ You will find these four projects in the directories below them organized in the
 - Week 2:
     - week2 -- The unfinished template for the week's project, annotated with instructions.
 
-Our instructors' annotated results for each project will be provided during the class.  
+Our instructors annotated results for each project will be provided during the class.  
 Please note, these represent our way of doing the assignment and may differ from your results, 
 as there is often more than one way of doing things in search.
 
