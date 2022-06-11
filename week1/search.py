@@ -92,9 +92,15 @@ def query():
         query_obj = create_query("*", [], sort, sortDir)
 
     print("query obj: {}".format(query_obj))
+    # print("type: {}".format(user_query))
+    # print("type: {}".format(request.args.getlist("filter.name")))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(
+            body=query_obj,
+            index='bbuy_products'
+        )   
     # Postprocess results here if you so desire
 
     #print(response)
@@ -105,17 +111,137 @@ def query():
     else:
         redirect(url_for("index"))
 
-
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
         'size': 10,
+        "sort": [
+            {
+                sort: {
+                    "order": sortDir  
+                }
+            }
+        ],
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": {
+                            "query_string": {
+                                "query": user_query,
+                                "fields": [
+                                    "name.unique^20",
+                                    "name^1000",
+                                    "shortDescription^20",
+                                    "longDescription^10",
+                                    "department"
+                                ]
+                            }
+                        },
+                        "filter": filters
+                    }
+                },
+                # "boost": "20",
+                "boost_mode": "multiply",
+                "score_mode": "sum",
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "salesRankShortTerm",
+                            "modifier": "reciprocal",
+                            "missing": 1000000000
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "salesRankLongTerm",
+                            "modifier": "reciprocal",
+                            "missing": 1000000000
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "salesRankMediumTerm",
+                            "modifier": "reciprocal",
+                            "missing": 1000000000
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "customerReviewCount",
+                            "modifier": "log",
+                            "missing": 1
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "customerReviewCount",
+                            "modifier": "reciprocal",
+                            "missing": 1000000000
+                        }
+                    }
+                ]
+            }
         },
-        "aggs": {
-            #### Step 4.b.i: create the appropriate query and aggregations here
 
+        "aggs": {
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "key": "$",
+                            "from": 0,
+                            "to": 10
+                        },
+                        {
+                            "key": "$$",
+                            "from": 10,
+                            "to": 50
+                        },
+                        {
+                            "key": "$$$",
+                            "from": 50,
+                            "to": 200
+                        },
+                        {
+                            "key": "$$$$",
+                            "from": 200,
+                            "to": 500
+                        },
+                        {
+                            "key": "$$$$$",
+                            "from": 500
+                        }
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department.keyword",
+                    "size": 10,
+                    "missing": "N/A",
+                    "min_doc_count": 0
+                }
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "image.keyword"
+                }
+            }
+        },
+        "highlight": {
+            "number_of_fragments": 1,
+            "fragment_size": -1,
+            "pre_tags": ['<span style="color:blue">'],
+            "post_tags": ["</span>"],
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {},
+                "department": {}
+            }
         }
     }
+
     return query_obj
