@@ -1,11 +1,16 @@
-{% if suggest in search_response %}
+{% if search_response.suggest is defined %}
   <div>
-    {% if (search_response.suggest.phrase_suggest is defined or search_response.suggest.term_suggest is defined) and (search_response.suggest.phrase_suggest|length > 0 or search_response.suggest.term_suggest|length > 0) and (search_response.suggest.phrase_suggest[0].options|length  > 0 or search_response.suggest.term_suggest[0].options|length  > 0 ) %}
-      Did you mean?{% endif %}
-    {% if search_response.suggest.phrase_suggest is defined and search_response.suggest.phrase_suggest|length > 0 and search_response.suggest.phrase_suggest[0].options|length  > 0 %}
+    {% if (search_response.suggest.phrase_suggest is defined or search_response.suggest.term_suggest is defined) 
+      and (search_response.suggest.phrase_suggest|length > 0 or search_response.suggest.term_suggest|length > 0) 
+      and (search_response.suggest.phrase_suggest[0].options|length  > 0 or (
+        search_response.suggest.term_suggest.options is defined and
+        search_response.suggest.term_suggest[0].options|length  > 0)) %}
+      Did you mean?
+    {% endif %}
+    {% if search_response.suggest.phrase_suggest is defined and search_response.suggest.phrase_suggest|length > 0 and search_response.suggest.phrase_suggest[0].options|length > 0 %}
       <label>Phrase suggestions</label>: {{ search_response.suggest.phrase_suggest[0].options[0].highlighted }}
     {% endif %}
-    {% if search_response.suggest.term_suggest is defined and search_response.suggest.term_suggest|length > 0 and search_response.suggest.term_suggest[0].options|length  > 0 %}
+    {% if search_response.suggest.term_suggest is defined and search_response.suggest.term_suggest|length > 0 and search_response.suggest.term_suggest[0].options|length > 0 %}
       <label>Term suggestions</label>: {{ search_response.suggest.term_suggest[0].options[0].text }}
     {% endif %}
   </div>
