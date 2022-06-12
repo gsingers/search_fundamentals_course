@@ -53,7 +53,13 @@
 				"type": "integer"
 			},
 			"department": {
-				"type": "keyword"
+				"type": "text",
+				"fields": {
+					"keyword": {
+						"type": "keyword",
+						"ignore_above": 2048
+					}
+				}
 			},
 			"departmentId": {
 				"type": "long"
