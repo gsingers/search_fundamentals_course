@@ -67,5 +67,12 @@
       </div>
     </div>
   {% endfor %}
-
+  <div class="p-4 flex justify-center space-x-4">
+    {% if previousPage %}
+    <a href="{{ url_for("search.query") }}?&query={{ query|e }}{{ applied_filters }}&page={{ previousPage }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Previous Page</a>
+    {% endif %}
+    {% if nextPage %}
+    <a href="{{ url_for("search.query") }}?&query={{ query|e }}{{ applied_filters }}&page={{ nextPage }}" type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Next Page</a>
+    {% endif %}
+  </div>
 </div>

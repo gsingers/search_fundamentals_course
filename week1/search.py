@@ -2,13 +2,15 @@
 # The main search hooks for the Search Flask application.
 #
 from flask import (
-    Blueprint, redirect, render_template, request, url_for
+    Blueprint, redirect, render_template, request, url_for, g
 )
 
 from week1.opensearch import get_opensearch
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
+
+per_page = 10
 
 # Process the filters requested by the user and return a tuple that is appropriate for use in: the query, URLs displaying the filter and the display of the applied filters
 # filters -- convert the URL GET structure into an OpenSearch filter query
@@ -68,6 +70,10 @@ def query():
     filters = None
     sort = "_score"
     sortDir = "desc"
+    currentPage = int(request.args.get("page", 0))
+    nextPage = currentPage + 1
+    previousPage = currentPage - 1
+
     if request.method == 'POST':  # a query has been submitted
         user_query = request.form['query']
         if not user_query:
@@ -87,35 +93,130 @@ def query():
         if filters_input:
             (filters, display_filters, applied_filters) = process_filters(filters_input)
 
-        query_obj = create_query(user_query, filters, sort, sortDir)
+        query_obj = create_query(user_query, filters, sort, sortDir, currentPage)
     else:
-        query_obj = create_query("*", [], sort, sortDir)
+        query_obj = create_query("*", [], sort, sortDir, currentPage)
 
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
-    # Postprocess results here if you so desire
+    response = g.opensearch.search(
+        body = query_obj,
+        index = 'bbuy_products'
+    )
 
     #print(response)
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
-                               sort=sort, sortDir=sortDir)
+                               sort=sort, sortDir=sortDir, nextPage=nextPage, previousPage=previousPage)
     else:
         redirect(url_for("index"))
 
 
-def create_query(user_query, filters, sort="_score", sortDir="desc"):
+def create_query(user_query, filters, sort="_score", sortDir="desc", current_page=0):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
-        'size': 10,
+        # "from": current_page * per_page,
+        "size": per_page,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "query_string": {
+                                    "query": user_query,
+                                    "fields": ["name^100", "shortDescription^50", "longDescription^10", "department"],
+                                    "phrase_slop": 3
+                                }
+                            }
+                        ],
+                        "filter": []
+                    }
+                },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                     {
+                        "field_value_factor": {
+                            "field": "salesRankLongTerm",
+                            "modifier": "reciprocal",
+                            "missing": 100000000
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "salesRankMediumTerm",
+                            "modifier": "reciprocal",
+                            "missing": 100000000
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "salesRankShortTerm",
+                            "modifier": "reciprocal",
+                            "missing": 100000000
+                        }
+                    }
+                ]
+            },
         },
+         "highlight": {
+            "pre_tags" : ["<span class=\"text-yellow-800 bg-yellow-200\">"],
+            "post_tags" : ["</span>"],
+            "fields": {
+                "name": {},
+                "description": {},
+                "longDescription": {}
+            }
+        },
+        "sort": [
+            { sort: sortDir }
+        ],
         "aggs": {
-            #### Step 4.b.i: create the appropriate query and aggregations here
-
+            "department": {
+                "terms": {
+                    "field": "department.keyword",
+                    "size": 10,
+                    "missing": "N/A",
+                    "min_doc_count": 0
+                }
+            },
+            "missing_images": {
+                "missing": { "field": "image.keyword" }
+            },
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "key": "$",
+                            "from": 0,
+                            "to": 10
+                        },
+                        {
+                            "key": "$$",
+                            "from": 10,
+                            "to": 50
+                        },
+                        {
+                            "key": "$$$",
+                            "from": 50,
+                            "to": 200
+                        },
+                        {
+                            "key": "$$$$",
+                            "from": 200,
+                            "to": 1000
+                        },
+                        {
+                            "key": "$$$$$",
+                            "from": 1000
+                        }
+                    ]
+                }
+            }
         }
     }
     return query_obj

@@ -60,8 +60,18 @@ def get_opensearch():
     auth = ('admin', 'admin')
 
     #### Step 2.a: Create a connection to OpenSearch
-    client = None
-    return client
+    return OpenSearch(
+        hosts=[{'host': host, 'port': port}],
+        http_compress=True,  # enables gzip compression for request bodies
+        http_auth=auth,
+        # client_cert = client_cert_path,
+        # client_key = client_key_path,
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False,
+        #ca_certs=ca_certs_path
+    )
 
 
 @click.command()
@@ -89,9 +99,19 @@ def main(source_dir: str, index_name: str):
             if not 'productId' in doc or len(doc['productId']) == 0:
                 continue
 
+            documentID = doc['sku'][0]
+            if not documentID:
+                continue
+
             #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-            the_doc = None
-            docs.append(the_doc)
+            docs.append({'_index': index_name , '_id': documentID, '_source': doc})
+
+            if len(docs) % 2000 == 0:
+                logger.info('writing to ElasticSearch!')
+                bulk(client, docs, request_timeout=60)
+                logger.info('Indexing document batch')
+                docs = []
+            
     toc = time.perf_counter()
     logger.info(f'Done. Total docs: {docs_indexed}.  Total time: {((toc - tic) / 60):0.3f} mins.')
 
