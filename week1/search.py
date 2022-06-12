@@ -107,54 +107,61 @@ def query():
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
 
+    sort_obj = {
+            sort : {
+                "order": sortDir
+            }
+        }
+
     query_obj = {
-    "size": 10,
-    "query":{
-      "bool": {
-         "must":{
-             "query_string": {
-                    "query": user_query,
-                    "fields": [
-                        "name",
-                        "shortDescription",
-                        "longDescription",
-                        "department"
-                    ],
-                    "phrase_slop": 3
+        "size": 10,
+        "query":{
+        "bool": {
+            "must":{
+                "query_string": {
+                        "query": user_query,
+                        "fields": [
+                            "name",
+                            "shortDescription",
+                            "longDescription",
+                            "department"
+                        ],
+                        "phrase_slop": 3
+                    },
                 },
+                "filter": filters
+            }   
+        },
+        "highlight": {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            }
+        },
+        "aggs": {
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "from": 0
+                        }
+                    ]
+                }
             },
-            "filter": filters
-         }   
-      },
-    "highlight": {
-        "fields": {
-            "name": {},
-            "shortDescription": {},
-            "longDescription": {}
-        }
-    },
-    "aggs": {
-        "regularPrice": {
-            "range": {
-                "field": "regularPrice",
-                "ranges": [
-                    {
-                        "from": 0
-                    }
-                ]
+            "department": {
+                "terms": {
+                    "field": "department.keyword"
+                }
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "image.keyword"
+                }
             }
         },
-        "department": {
-            "terms": {
-                "field": "department.keyword"
-            }
-        },
-        "missing_images": {
-            "missing": {
-                "field": "image.keyword"
-            }
-        }
+        "sort": sort_obj
     }
-}
     
     return query_obj
