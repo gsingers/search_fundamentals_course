@@ -26,7 +26,7 @@ do
 done
 shift $((OPTIND -1))
 
-mkdir $LOGS_DIR
+#mkdir $LOGS_DIR
 
 echo "Creating index settings and mappings"
 echo " Product file: $PRODUCTS_JSON_FILE"
