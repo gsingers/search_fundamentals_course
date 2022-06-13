@@ -99,7 +99,7 @@
 				"fields": {
 					"keyword": {
 						"type": "keyword",
-						"ignore_above": 2000
+						"ignore_above": 3000
 					}
 				}
 			},
@@ -150,7 +150,7 @@
 				"fields": {
 				  "keyword": {
 					"type": "keyword",
-					"ignore_above": 2048
+					"ignore_above": 1000
 				  	}
 				}
 			},
@@ -186,7 +186,7 @@
 				"fields": {
 				  "keyword": {
 					"type": "keyword",
-					"ignore_above": 2048
+					"ignore_above": 2000
 				  	}
 				}
 			},
@@ -195,7 +195,7 @@
 				"fields": {
 				  "keyword": {
 					"type": "keyword",
-					"ignore_above": 2048
+					"ignore_above": 2000
 				  	}
 				}
 			},

@@ -114,60 +114,108 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         }
 
     query_obj = {
-        "size": 10,
-        "query":{
-        "bool": {
-            "must":{
-                "query_string": {
-                        "query": user_query,
-                        "fields": [
-                            "name^100",
-                            "shortDescription^50",
-                            "longDescription^10",
-                            "department"
-                        ],
-                        "phrase_slop": 3
+    "size": 10,
+    "query": {
+        "function_score": {
+            "query": {
+                "bool": {
+                    "must": {
+                        "query_string": {
+                            "query": user_query,
+                            "fields": [
+                                "name^100",
+                                "shortDescription^50",
+                                "longDescription^10",
+                                "department"
+                            ],
+                            "phrase_slop": 3
+                        }
+                    },
+                    "filter": filters
+                }
+            },
+            "boost_mode": "multiply",
+            "score_mode": "max",
+            "functions": [
+                {
+                    "field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "modifier": "reciprocal",
+                        "missing": 100000000
                     }
                 },
-                "filter": filters
-            }   
-        },
-        "highlight": {
-            "fields": {
-                "name": {},
-                "shortDescription": {},
-                "longDescription": {}
+                {
+                    "field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "modifier": "reciprocal",
+                        "missing": 100000000
+                    }
+                },
+                {
+                    "field_value_factor": {
+                        "field": "salesRankShortTerm",
+                        "modifier": "reciprocal",
+                        "missing": 100000000
+                    }
+                }
+            ],
+        }
+    },
+    "highlight": {
+        "fields": {
+            "name": {},
+            "shortDescription": {},
+            "longDescription": {}
+        }
+    },
+    "aggs": {
+        "regularPrice": {
+            "range": {
+                "field": "regularPrice",
+                "ranges": [
+                    {
+                        "key": "$",
+                        "to": 100
+                    },
+                    {
+                        "key": "$$",
+                        "from": 100,
+                        "to": 200
+                    },
+                    {
+                        "key": "$$$",
+                        "from": 200,
+                        "to": 300
+                    },
+                    {
+                        "key": "$$$$",
+                        "from": 300,
+                        "to": 400
+                    },
+                    {
+                        "key": "$$$$$",
+                        "from": 400,
+                        "to": 500
+                    },
+                    {
+                        "key": "$$$$$$",
+                        "from": 500
+                    }
+                ]
             }
         },
-        "aggs": {
-            "regularPrice": {
-                "range": {
-                        "field": "regularPrice",
-                        "ranges": [
-                            {
-                                "key": "$",
-                                "to": 100
-                            },
-                            {"key": "$$", "from": 100, "to": 200},
-                            {"key": "$$$", "from": 200, "to": 300},
-                            {"key": "$$$$", "from": 300, "to": 400},
-                            {"key": "$$$$$", "from": 400, "to": 500},
-                            {"key": "$$$$$$", "from": 500}
-                    ]
-                }
-            },
-            "department": {
-                "terms": {
-                    "field": "department.keyword"
-                }
-            },
-            "missing_images": {
-                "missing": {
-                    "field": "image.keyword"
-                }
+        "department": {
+            "terms": {
+                "field": "department.keyword"
             }
         },
-        "sort": sort_obj
+        "missing_images": {
+            "missing": {
+                "field": "image.keyword"
+            }
+        }
+    },
+    "sort": sort_obj
     }
     
     return query_obj
