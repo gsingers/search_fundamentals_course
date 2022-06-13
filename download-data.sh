@@ -1,4 +1,7 @@
-cd /workspace/datasets
+#!/usr/bin/env zsh
+set -ex
+cd workspace/datasets
+pwd
 # TODO: put in validation checks
 #pip install kaggle
 echo "Downloading Kaggle"

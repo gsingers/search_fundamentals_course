@@ -1,3 +1,8 @@
+#!/usr/bin/env zsh
+
+set -e
+set -x
+
 usage()
 {
   echo "Usage: $0 [-y /path/to/python/indexing/code] [-d /path/to/kaggle/best/buy/datasets] [-p /path/to/bbuy/products/field/mappings] [ -q /path/to/bbuy/queries/field/mappings ] [ -g /path/to/write/logs/to ]"
@@ -5,12 +10,13 @@ usage()
   exit 2
 }
 
-PRODUCTS_JSON_FILE="/workspace/search_fundamentals_course/opensearch/bbuy_products.json"
-QUERIES_JSON_FILE="/workspace/search_fundamentals_course/opensearch/bbuy_queries.json"
-DATASETS_DIR="/workspace/datasets"
-PYTHON_LOC="/workspace/search_fundamentals_course/week1"
+WORKDIR="/Users/tholland/search_fundamentals_course/"
+PRODUCTS_JSON_FILE="${WORKDIR}/opensearch/bbuy_products.json"
+QUERIES_JSON_FILE="${WORKDIR}/opensearch/bbuy_queries.json"
+DATASETS_DIR="${WORKDIR}/workspace/datasets"
+PYTHON_LOC="${WORKDIR}/week1"
 
-LOGS_DIR="/workspace/logs"
+LOGS_DIR="${WORKDIR}/workspace/logs"
 
 while getopts ':p:q:g:y:d:h' c
 do
@@ -52,7 +58,7 @@ if [ -f index_products.py ]; then
     echo "Failed to index products"
     exit 2
   fi
-fi 
+fi
 if [ -f index_queries.py ]; then
   echo "Indexing queries data and writing logs to $LOGS_DIR/index_queries.log"
   nohup python index_queries.py -s "$DATASETS_DIR/train.csv" > "$LOGS_DIR/index_queries.log" &
