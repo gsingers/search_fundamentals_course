@@ -109,7 +109,6 @@ def query():
 
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
-    # TODO: apply filters
     # TODO: missing aggregation for images
     # TODO: highlighter for name, shortDescription, longDescription
     query_obj = {
@@ -117,11 +116,25 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         'sort': [
           {sort: sortDir},
         ],
+        "highlight": {
+            "pre_tags": "<mark>",
+            "post_tags": "</mark>",
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {},
+            },
+        },
         "query": {
-            "query_string": {
-                "query": user_query,
-                "fields": ["name", "shortDescription", "longDescription"],
-                "phrase_slop": 3,
+            "bool": {
+                "must": {
+                    "query_string": {
+                        "query": user_query,
+                        "fields": ["name", "shortDescription", "longDescription"],
+                        "phrase_slop": 3,
+                    },
+                },
+                "filter": filters,
             },
         },
         #### Step 4.b.i: create the appropriate query and aggregations here
@@ -140,8 +153,12 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             },
             "department": {
                 "terms": {
-                    # TODO: reindex and change schema
-                    "field": "departmentId",
+                    "field": "department.keyword",
+                },
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "image",
                 },
             },
         },

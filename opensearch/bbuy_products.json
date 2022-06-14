@@ -110,7 +110,14 @@
         "type": "keyword"
       },
       "department": {
-        "type": "keyword"
+        "type": "text",
+        "analyzer": "english",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "departmentId": {
         "type": "keyword"
