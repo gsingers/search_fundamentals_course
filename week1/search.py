@@ -126,16 +126,53 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             },
         },
         "query": {
-            "bool": {
-                "must": {
-                    "query_string": {
-                        "query": user_query,
-                        "fields": ["name", "shortDescription", "longDescription"],
-                        "phrase_slop": 3,
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": {
+                            "query_string": {
+                                "query": user_query,
+                                "fields": [
+                                    "name^100",
+                                    "shortDescription^50",
+                                    "longDescription^50",
+                                    "department",
+                                ],
+                                "phrase_slop": 3,
+                            },
+                        },
+                        "filter": filters,
                     },
                 },
-                "filter": filters,
-            },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                    {
+                      "field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "factor": 1,
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                      }
+                    },
+                    {
+                      "field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "factor": 1,
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                      }
+                    },
+                    {
+                      "field_value_factor": {
+                        "field": "salesRankShortTerm",
+                        "factor": 1,
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                      }
+                    }
+                ],
+            }
         },
         #### Step 4.b.i: create the appropriate query and aggregations here
         "aggs": {
