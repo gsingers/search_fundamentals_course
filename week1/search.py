@@ -91,13 +91,14 @@ def query():
     else:
         query_obj = create_query("*", [], sort, sortDir)
 
-    print("query obj: {}".format(query_obj))
+    import json
+    print("query obj: {}".format(json.dumps(query_obj, indent="  ")))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    # TODO: Replace me with an appropriate call to OpenSearch
+    response = get_opensearch().search(query_obj)
     # Postprocess results here if you so desire
-
-    #print(response)
+    # print(response)
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
@@ -108,14 +109,41 @@ def query():
 
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
+    # TODO: apply filters
+    # TODO: missing aggregation for images
+    # TODO: highlighter for name, shortDescription, longDescription
     query_obj = {
         'size': 10,
+        'sort': [
+          {sort: sortDir},
+        ],
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "query_string": {
+                "query": user_query,
+                "fields": ["name", "shortDescription", "longDescription"],
+                "phrase_slop": 3,
+            },
         },
+        #### Step 4.b.i: create the appropriate query and aggregations here
         "aggs": {
-            #### Step 4.b.i: create the appropriate query and aggregations here
-
-        }
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {"key": "$", "to": 20.0},
+                        {"key": "$$", "from": 20.0, "to": 50.0},
+                        {"key": "$$$", "from": 50.0, "to": 100.0},
+                        {"key": "$$$$", "from": 100.0, "to": 250.0},
+                        {"key": "$$$$$", "from": 250.0},
+                    ],
+                },
+            },
+            "department": {
+                "terms": {
+                    # TODO: reindex and change schema
+                    "field": "departmentId",
+                },
+            },
+        },
     }
     return query_obj

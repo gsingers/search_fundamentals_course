@@ -110,13 +110,7 @@
         "type": "keyword"
       },
       "department": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "keyword"
       },
       "departmentId": {
         "type": "keyword"
