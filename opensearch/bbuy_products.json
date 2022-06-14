@@ -5,10 +5,10 @@
   "mappings": {
     "properties": {
       "sku": {
-        "type": "integer"
+        "type": "keyword"
       },
       "productId": {
-        "type": "integer"
+        "type": "keyword"
       },
       "name": {
         "type": "text",

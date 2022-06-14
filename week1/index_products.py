@@ -9,6 +9,7 @@ import glob
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 import logging
+from pathlib import Path
 
 from time import perf_counter
 import concurrent.futures
@@ -98,8 +99,26 @@ def get_opensearch():
 
     return client
 
+def checkpoint_path(checkpoints_dir, file):
+    fp = Path(f'{file}.ckpt')
+    return Path(checkpoints_dir) / fp.parent.name / fp.name
 
-def index_file(file, index_name):
+def should_process_file(checkpoints_dir, file):
+    path = checkpoint_path(checkpoints_dir, file)
+    return not path.is_file()
+
+def mark_file_completed(checkpoints_dir, file):
+    path = checkpoint_path(checkpoints_dir, file)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.touch()
+    logger.info(f'Completed {path}')
+
+
+def index_file(file, index_name, checkpoints_dir):
+    if not should_process_file(checkpoints_dir, file):
+        logger.info(f'Skipping file : {file}')
+        return 0
+
     docs_indexed = 0
     client = get_opensearch()
     logger.info(f'Processing file : {file}')
@@ -113,26 +132,33 @@ def index_file(file, index_name):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        #print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = None
+        the_doc = {'_index': index_name, **doc}
         docs.append(the_doc)
 
+    for start in range(0, len(docs), 2000):
+        end = min(start+2000, len(docs))
+        docs_to_index = docs[start:end]
+        bulk(client, docs_to_index)
+        docs_indexed += len(docs_to_index)
+        mark_file_completed(checkpoints_dir, file)
+    logger.info(f'Completed file : {file}')
     return docs_indexed
 
 @click.command()
 @click.option('--source_dir', '-s', help='XML files source directory')
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
-def main(source_dir: str, index_name: str, workers: int):
+@click.option('--checkpoints_dir', '-c', help='directory to save checkpoints to')
+def main(source_dir: str, index_name: str, workers: int, checkpoints_dir):
 
     files = glob.glob(source_dir + "/*.xml")
     docs_indexed = 0
     start = perf_counter()
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        futures = [executor.submit(index_file, file, index_name) for file in files]
+        futures = [executor.submit(index_file, file, index_name, checkpoints_dir) for file in files]
         for future in concurrent.futures.as_completed(futures):
             docs_indexed += future.result()
 
