@@ -116,7 +116,9 @@ def index_file(file, index_name):
         #print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
-
+        if doc["name"] and len(doc["name"]):
+            doc["suggest"] = doc["name"] # copy over name to suggest for typeahead
+            doc["canonical"] = doc["name"][0].strip().title().encode("ascii", "ignore").decode()
         docs.append({'_index': index_name, '_id':doc['sku'][0], '_source' : doc})
         #docs.append({'_index': index_name, '_source': doc})
         docs_indexed += 1
