@@ -1,4 +1,5 @@
 # From https://github.com/dshvadskiy/search_with_machine_learning_course/blob/main/index_products.py
+import os
 import opensearchpy
 import requests
 from lxml import etree
@@ -170,4 +171,8 @@ def main(source_dir: str, index_name: str, workers: int, checkpoints_dir):
     logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
 
 if __name__ == "__main__":
+  os.setpgrp() # create new process group, become its leader
+  try:
     main()
+  finally:
+    os.killpg(0, signal.SIGTERM) # kill all processes in my group

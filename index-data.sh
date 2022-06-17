@@ -35,6 +35,9 @@ shift $((OPTIND -1))
 
 mkdir -p $LOGS_DIR
 
+echo "Waiting for cluster health"
+curl -k -X GET -u admin:admin "https://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"
+
 echo "Creating index settings and mappings"
 echo " Product file: $PRODUCTS_JSON_FILE"
 curl -k -X PUT -u admin:admin  "https://localhost:9200/bbuy_products" -H 'Content-Type: application/json' -d "@$PRODUCTS_JSON_FILE"
@@ -51,6 +54,6 @@ if [ $? -ne 0 ] ; then
 fi
 
 cd $PYTHON_LOC
-python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=6 -c "${CHECKPOINTS_DIR}"
+python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=4 -c "${CHECKPOINTS_DIR}"
 echo ""
 python index_queries.py -s "$DATASETS_DIR/train.csv"
