@@ -109,6 +109,7 @@ def query():
         qu.add_click_priors(query_obj, user_query, prior_clicks)
 
         ##### W2, L2, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
         import json
         print("Plain ol q: %s" % json.dumps(query_obj))
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
@@ -126,6 +127,7 @@ def query():
         qu.add_click_priors(query_obj, user_query, prior_clicks)
 
         ##### W2, L2, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
 
     else:
         query_obj = qu.create_query("*", "", [], sort, sortDir, size=100)
