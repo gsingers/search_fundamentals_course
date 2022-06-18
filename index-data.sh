@@ -54,6 +54,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 cd $PYTHON_LOC
-python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=4 # -c "${CHECKPOINTS_DIR}"
+#python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=4 # -c "${CHECKPOINTS_DIR}"
 echo ""
+# exit 0
 python index_queries.py -s "$DATASETS_DIR/train.csv"

@@ -154,7 +154,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc", size=10, in
 
 
 ##########
-# Week 2, Level 2: 
+# Week 2, Level 2:
 ##########
 # Give a user query from the UI and the query object we've built so far, adding in spelling suggestions
 def add_spelling_suggestions(query_obj, user_query):
@@ -181,10 +181,26 @@ def add_click_priors(query_obj, user_query, priors_gb):
             click_prior = ""
             #### W2, L1, S1
             # Create a string object of SKUs and weights that will boost documents matching the SKU
-            print("TODO: Implement me")
+            num_queries = len(prior_clicks_for_query)
+            skus = (
+                prior_clicks_for_query.sku
+                .value_counts()
+                .reset_index()
+                .rename(columns={'sku': 'count', 'index': 'sku'})
+            )
+            factors = skus.apply(lambda r: f'{r.sku}^{r["count"]/num_queries:g}', axis=1)
+            click_prior = ' '.join(factors)
             if click_prior != "":
-                click_prior_query_obj = None # Implement a query object that matches on the ID or SKU with weights of
+                # Implement a query object that matches on the ID or SKU with weights of
                 # This may feel like cheating, but it's really not, esp. in ecommerce where you have all this prior data,
+                click_prior_query_obj = {
+                        'match': {
+                            'sku': {
+                                'query': click_prior,
+                                'boost': 750,
+                                }
+                        }
+                }
                 if click_prior_query_obj is not None:
                     query_obj["query"]["function_score"]["query"]["bool"]["should"].append(click_prior_query_obj)
     except KeyError as ke:
