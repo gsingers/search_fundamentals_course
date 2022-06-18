@@ -1,12 +1,12 @@
 #
 # The main search hooks for the Search Flask application.
 #
+from pprint import pprint
 from flask import (
     Blueprint, redirect, render_template, request, url_for, current_app
 )
 
 from week2.opensearch import get_opensearch
-
 import week2.utilities.query_utils as qu
 
 bp = Blueprint('search', __name__, url_prefix='/search')
@@ -51,20 +51,36 @@ def process_filters(filters_input):
             filters.append(the_filter)
             display_filters.append("{}: {}".format(display_name, key))
             applied_filters += "&{}.fieldName={}&{}.key={}".format(filter, field, filter, key)
-    print("Filters: {}".format(filters))
+    pprint("Filters: {}".format(filters))
 
     return filters, display_filters, applied_filters
 
 @bp.route('/autocomplete', methods=['GET'])
 def autocomplete():
+    opensearch = get_opensearch()
     results = {}
     if request.method == 'GET':  # a query has been submitted
         prefix = request.args.get("prefix")
-        print(f"Prefix: {prefix}")
+        pprint(f"Prefix: {prefix}")
         if prefix is not None:
             type = request.args.get("type", "queries") # If type == queries, this is an autocomplete request, else if products, it's an instant search request.
-            ##### W2, L3, S1
-            search_response = None
+            ##### W2, L3, S1        
+            prefix_query = {
+                "suggest": {
+                    "autocomplete":{
+                        "prefix": prefix,
+                        "completion":{
+                            "field":"suggest",
+                            "skip_duplicates": "true"
+                        }
+                    }
+                }
+            }
+            search_index = "bbuy_products" if  request.args.get("type", "queries") != "queries" else "bbuy_queries"
+            search_response = opensearch.search(
+                body=prefix_query, 
+                index=search_index
+            )
             print("TODO: implement autocomplete AND instant search")
             if (search_response and search_response['suggest']['autocomplete'] and search_response['suggest']['autocomplete'][0]['length'] > 0): # just a query response
                 results = search_response['suggest']['autocomplete'][0]['options']
@@ -106,9 +122,10 @@ def query():
 
         query_obj = qu.create_query(user_query,  [], sort, sortDir, size=20)  # We moved create_query to a utility class so we could use it elsewhere.
         ##### W2, L1, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
-        print("Plain ol q: %s" % query_obj)
+        pprint("Plain ol q: %s" % query_obj)
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
         filters_input = request.args.getlist("filter.name")
@@ -121,6 +138,7 @@ def query():
             (filters, display_filters, applied_filters) = process_filters(filters_input)
         query_obj = qu.create_query(user_query,  filters, sort, sortDir, size=20)
         #### W2, L1, S2
+        qu.add_spelling_suggestions(query_obj, user_query)
 
         ##### W2, L2, S2
 
