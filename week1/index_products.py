@@ -1,6 +1,7 @@
 # From https://github.com/dshvadskiy/search_with_machine_learning_course/blob/main/index_products.py
 import os
 import opensearchpy
+import signal
 import requests
 from lxml import etree
 from multiprocessing import Pool
@@ -135,7 +136,7 @@ def index_file(file, index_name, checkpoints_dir):
             doc[key] = child.xpath(xpath_expr)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
-        #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
+        #### Step 2.b: Create a valid OpenSearch Doc and bulk index 500 docs at a time
         the_doc = {
             '_index': index_name,
             '_id': str(doc['sku']),
@@ -143,8 +144,8 @@ def index_file(file, index_name, checkpoints_dir):
         }
         docs.append(the_doc)
 
-    for start in range(0, len(docs), 2000):
-        end = min(start+2000, len(docs))
+    for start in range(0, len(docs), 500):
+        end = min(start+500, len(docs))
         docs_to_index = docs[start:end]
         bulk(client, docs_to_index)
         docs_indexed += len(docs_to_index)
@@ -174,5 +175,7 @@ if __name__ == "__main__":
   os.setpgrp() # create new process group, become its leader
   try:
     main()
-  finally:
+  except Exception as e:
+    print(e)
     os.killpg(0, signal.SIGTERM) # kill all processes in my group
+    sys.exit(1)

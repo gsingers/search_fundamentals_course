@@ -15,7 +15,7 @@ PRODUCTS_JSON_FILE="${WORKDIR}/opensearch/bbuy_products.json"
 QUERIES_JSON_FILE="${WORKDIR}/opensearch/bbuy_queries.json"
 CHECKPOINTS_DIR="${WORKDIR}/workspace/checkpoints"
 DATASETS_DIR="${WORKDIR}/workspace/datasets"
-PYTHON_LOC="${WORKDIR}/week1"
+PYTHON_LOC="${WORKDIR}/week2"
 
 LOGS_DIR="${WORKDIR}/workspace/logs"
 
@@ -54,6 +54,6 @@ if [ $? -ne 0 ] ; then
 fi
 
 cd $PYTHON_LOC
-python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=4 -c "${CHECKPOINTS_DIR}"
+python index_products.py -s "$DATASETS_DIR/product_data/products" --workers=4 # -c "${CHECKPOINTS_DIR}"
 echo ""
 python index_queries.py -s "$DATASETS_DIR/train.csv"
