@@ -200,3 +200,16 @@ GET /suggesters_index/_search
   }
 }
 
+GET /suggesters_index/_search
+{
+  "suggest": {
+    "completion_suggest":{
+      "prefix": "remo",
+      "completion":{
+        "field":"completion"
+      }
+    }
+  }
+}
+
+
