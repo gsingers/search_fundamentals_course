@@ -27,7 +27,7 @@ You will also find several supporting directories and files for [Docker](https:/
 
 1. For this class, you will need a Kaggle account and a [Kaggle API token](https://www.kaggle.com/docs/api).
 1. No prior search knowledge is required, but you should be able to code in Python or Java (all examples are in Python)
-1. You will need a [Gitpod](https://gitpod.io) account.
+1. You will need a [Gitpod](https://gitpod.io) account. Make sure that the Gitpod account is linked to a GitHub account, otherwise you will not be able to push the changes you make to the project in the Gitpod to GitHub.
 
 # Working in Gitpod (Officially Supported)
 
