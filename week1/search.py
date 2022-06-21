@@ -94,8 +94,7 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
-    # Postprocess results here if you so desire
+    response = opensearch.search(body=query_obj, index="bbuy_products")
 
     #print(response)
     if error is None:
@@ -111,11 +110,84 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "bool":{
+                "must": [
+                    {
+                        "query_string": {
+                            "fields": [
+                                "name^50", 
+                                "shortDescription^25", 
+                                "longDescription^5", 
+                                "department"
+                                ],
+                            "query": user_query,
+                            "type": "phrase",
+                            "phrase_slop": 3
+                        }
+                    }
+                ],
+                "filter": filters
+            }
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
-        }
+            "regularPrice":{
+                "range":{
+                    "field":"regularPrice",
+                    "ranges":[
+                        {
+                            "key": "$",
+                            "from": 0,
+                            "to": 100
+                        },
+                        {
+                            "key": "$$",
+                            "from": 100,
+                            "to": 200
+                        },
+                        {
+                            "key": "$$$",
+                            "from": 200, 
+                            "to": 300
+                        },
+                        {
+                            "key": "$$$$",
+                            "from": 300,
+                            "to": 400
+                        },
+                        {
+                            "key": "$$$$$",
+                            "from": 500,
+                            "to": 100000000
+                        }
+                    ]
+                }
+            },
+            "department":{
+                "terms": {
+                    "field": "department.keyword"
+                },
+            },
+            "missing_images":{
+                "missing":{
+                    "field": "image.keyword"
+                }
+            }
+        },
+        # Explicitly order highlighted fields
+        "highlight":{
+            "number_of_fragments": 1,
+            "fragment_size": -1,
+            "pre_tags": ['<span style="color:red">'],
+            "post_tags": ["</span>"],
+            "fields":{
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            }
+        },
+        "sort": [{
+            sort: { "order": sortDir }
+        }]
     }
     return query_obj
