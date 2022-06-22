@@ -1,6 +1,6 @@
 #
 # The main search hooks for the Search Flask application.
-# xyz
+# xyzw
 from flask import (
     Blueprint, redirect, render_template, request, url_for
 )
