@@ -50,7 +50,7 @@ GET bbuy_products/_search
                     "fields": ["name^1000", "shortDescription^50", "longDescription^10", "department"]
             }
         },
-        "boost_mode": "multiply"
+        "boost_mode": "multiply",
         "score_mode": "#SETME",
         "functions": [
         ]
