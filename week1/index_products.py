@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logging.basicConfig(format='%(levelname)s:%(message)s')
 
-# NOTE: this is not a complete list of fields.  If you wish to add more, put in the appropriate XPath expression.
+#NOTE: this is not a complete list of fields.  If you wish to add more, put in the appropriate XPath expression.
 #TODO: is there a way to do this using XPath/XSL Functions so that we don't have to maintain a big list?
 mappings =  [
             "productId/text()", "productId",
@@ -84,8 +84,20 @@ def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
+    
     #### Step 2.a: Create a connection to OpenSearch
-    client = None
+    client = OpenSearch(
+        hosts=[{'host': host, 'port': port}],
+        http_compress=True,  # enables gzip compression for request bodies
+        http_auth=auth,
+        # client_cert = client_cert_path,
+        # client_key = client_key_path,
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False,
+    )
+
     return client
 
 
@@ -97,18 +109,32 @@ def index_file(file, index_name):
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
+    
     for child in children:
         doc = {}
         for idx in range(0, len(mappings), 2):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
+        
         #print(doc)
+        
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
+        
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = None
-        docs.append(the_doc)
+        docs.append({'_index': index_name , '_id': doc['sku'][0], '_source': doc})
+
+        if len(docs) % 2000 == 0:
+            bulk(client, docs, request_timeout=60)
+            docs_indexed += len(docs)
+            logger.info(f'{docs_indexed} documents indexed')
+            docs = []
+
+    if (len(docs) > 0):
+        bulk(client, docs, request_timeout=60)
+        docs_indexed += len(docs)
+        logger.info(f'{docs_indexed} documents indexed')
 
     return docs_indexed
 
