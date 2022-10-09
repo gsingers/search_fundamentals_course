@@ -12,6 +12,10 @@ import logging
 from time import perf_counter
 import concurrent.futures
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 logger = logging.getLogger(__name__)
@@ -84,8 +88,17 @@ def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
-    #### Step 2.a: Create a connection to OpenSearch
-    client = None
+    client = OpenSearch(
+        hosts=[{'host': host, 'port': port}],
+        http_compress=True,  # enables gzip compression for request bodies
+        http_auth=auth,
+        # client_cert = client_cert_path,
+        # client_key = client_key_path,
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False,
+    )
     return client
 
 
@@ -93,6 +106,7 @@ def index_file(file, index_name):
     docs_indexed = 0
     client = get_opensearch()
     logger.info(f'Processing file : {file}')
+
     tree = etree.parse(file)
     root = tree.getroot()
     children = root.findall("./product")
@@ -103,12 +117,14 @@ def index_file(file, index_name):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        #print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
-        #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = None
-        docs.append(the_doc)
+        doc['_index'] = index_name
+        docs.append(doc)
+    print(doc)
+    for docs_chunk in chunks(docs, 2000):
+        bulk(client, docs_chunk, request_timeout=60)
+
 
     return docs_indexed
 
@@ -117,8 +133,8 @@ def index_file(file, index_name):
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
-
     files = glob.glob(source_dir + "/*.xml")
+    print(files)
     docs_indexed = 0
     start = perf_counter()
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
