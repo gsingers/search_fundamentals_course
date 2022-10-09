@@ -31,7 +31,7 @@
         {% if agg.doc_count > 1 %}
           <div class="aggregation">
             <div><a class="text-blue-500 flex"
-                href="{{ url_for("search.query") }}?&query={{ query|e }}{{ applied_filters }}&filter.name=department.keyword&department.keyword.type=terms&department.keyword.key={{ agg.key }}">
+                href="{{ url_for("search.query") }}?&query={{ query|e }}{{ applied_filters }}&filter.name=department&department.type=terms&department.key={{ agg.key }}">
                 <div class="flex-grow truncate">{{ agg.key }}</div> <span class="text-slate-500">{{ "{:,}".format(agg.doc_count) }}</span>
               </a>
             </div>
