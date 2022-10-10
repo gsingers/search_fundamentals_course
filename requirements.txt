@@ -9,3 +9,5 @@ urljoin
 graphviz
 pandas
 numexpr
+jupyterlab
+jupyterlab_vim

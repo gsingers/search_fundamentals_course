@@ -1,0 +1,12 @@
+GET {{url}}/_cluster/health
+
+###
+
+GET {{url}}/_search
+Content-Type: application/json
+
+{
+    "query": {
+        "match_all": {}
+    }
+}

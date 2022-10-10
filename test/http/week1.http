@@ -1,0 +1,126 @@
+### check cluster
+
+GET {{url}}/_cat/health
+Content-Type: application/json
+
+### Getting started
+DELETE {{url}}/search_fun_test/_doc/doc_a
+
+###
+
+PUT {{url}}/search_fun_test/_doc/doc_a
+Content-Type: application/json
+
+{
+    "title": "Fox and Hounds",
+    "body": "The quick red fox jumped over the lazy brown dogs.",
+    "category": "childrens"
+}
+
+###
+
+PUT {{url}}/search_fun_test/_doc/doc_b
+Content-Type: application/json
+
+{
+    "title": "Fox wins championship",
+    "body": "Wearing all red, the Fox jumped out to a lead in the race over the Dog.",
+    "category": "sports"
+}
+
+###
+
+PUT {{url}}/search_fun_test/_doc/doc_c
+Content-Type: application/json
+
+{
+    "title": "Lead Paint Removal",
+    "body": "All lead must be removed from the brown and red paint.",
+    "category": "instructional"
+}
+
+###
+
+PUT {{url}}/search_fun_test/_doc/doc_d
+Content-Type: application/json
+
+{
+    "title": "The Three Little Pigs Revisted",
+    "body": "The big, bad wolf huffed and puffed and blew the house down. The end.",
+    "category": "childrens"
+}
+
+### Getting started
+
+GET {{url}}/search_fun_test/_doc/doc_b
+Content-Type: application/json
+
+### search
+
+GET {{url}}/search_fun_test/_search?q=dog
+Content-Type: application/json
+
+###
+
+GET {{url}}/search_fun_test/_search?q=jumped
+Content-Type: application/json
+
+###
+
+GET {{url}}/search_fun_test/_search
+Content-Type: application/json
+
+{
+    "size": 0,
+    "aggs": {
+        "CATEGORY": {
+            "terms": {
+                "field": "category.keyword"
+            }
+        }
+    }
+}
+
+
+### analyze
+
+GET {{url}}/_analyze
+Content-Type: application/json
+
+{
+    "analyzer": "simple",
+    "text": "The QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+
+### analyze
+
+GET {{url}}/_analyze
+Content-Type: application/json
+
+{
+    "analyzer": "snowball",
+    "text": "The QUICK Brown-Foxes jumped over the lazy dog's bone."
+}
+
+###
+
+GET {{url}}/search_fun_revisited
+
+
+###
+GET {{url}}/search_fun_revisited/_search?q=body:dogs
+
+###
+GET {{url}}/search_fun_revisited_custom_mappings/_search?q=body:dogs
+
+### best buy data
+
+GET {{url}}/_cat/indices
+
+###
+
+DELETE {{url}}/bbuy_products
+
+###
+
+GET {{url}}/bbuy_products/_count
