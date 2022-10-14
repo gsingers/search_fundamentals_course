@@ -23,6 +23,8 @@ as there is often more than one way of doing things in search.
 
 You will also find several supporting directories and files for [Docker](https://docker.org) and [Gitpod](https://gitpod.io).
 
+You can use the included `Makefile` to interact with the project, including running pyenv, Flask, and re-indexing the data. Run all `make` commands at the root of the repo so Makefile can pick them up, i.e. `/workspace/search_fundamentals_course`.
+
 # Prerequisites
 
 1. For this class, you will need a Kaggle account and a [Kaggle API token](https://www.kaggle.com/docs/api).
@@ -46,12 +48,11 @@ You will also find several supporting directories and files for [Docker](https:/
         ./install-kaggle-token.sh
 2. Accept all of the [kaggle competition rules](https://www.kaggle.com/c/acm-sf-chapter-hackathon-big/rules) then run the download data script:
 
-        ./download-data.sh
+        ./download-data.sh (or `make download`)
 3. Verify your data is in the right location: 
        
         ls /workspace/datasets
 4. You should see:  `popular_skus.py  product_data  test.csv  train.csv`
-
 
 
 # Exploring the OpenSearch Sample Dashboards and Data
@@ -65,30 +66,27 @@ You will also find several supporting directories and files for [Docker](https:/
 At the command line, do the following steps to run the example.
 
 1. Activate your Python Virtual Environment.  We use `pyenv` [Pyenv website](https://github.com/pyenv/pyenv) and `pyenv-virtualenv` [Pyenv Virtualenv](https://github.com/pyenv/pyenv-virtualenv), but you can use whatever you are most comfortable with.
-    1. `pyenv activate search_fundamentals` -- Activate that Virtualenv. 
-1. Run Flask: 
-    1. `export FLASK_ENV=development`
-    1.  *_IMPORTANT_* Set the Flask App Environment Variable for either `week1` or `week2`, depending on what you are working on, e.g.: `export FLASK_APP=week2`
-    1. `flask run --port 3000` (or whatever port you choose) 
-    1. Open the Flask APP at `https://3000-<$GITPOD_URL>/`  (or whatever port you choose)
-1. Or run `ipython`
+    A. `pyenv activate search_fundamentals` -- Activate that Virtualenv. 
+1. Run Flask: run `make week1` or `make week2` depending on which week you need
+    A. Open the Flask APP at `https://3000-<$GITPOD_URL>/`  (or whatever port you choose)
+2. Or run `ipython`
     
 # Working locally (Not supported, but may work for you. YMMV)
 
 To run locally, you will need a few things:
 
 1. [Pyenv](https://github.com/pyenv/pyenv) and [Pyenv-Virtualenv](https://github.com/pyenv/pyenv-virtualenv) with Python 3.9.7 installed
-1. [Docker](https://docker.com/)
-1. A [Git](https://git-scm.com/) client
+2. [Docker](https://docker.com/)
+3. A [Git](https://git-scm.com/) client
 
 Note: these have only been tested on a Mac running OS 12.2.1.  YMMV.  Much of what you will need to do will be similar to what's in `.gitpod.Dockerfile`
 
 1. `pyenv install 3.9.7`
-1. `pip install` all of the libraries you see in `.gitpod.Dockerfile`
-1. Setup your weekly python environments per the "Weekly Project" above.
-1. Run OpenSearch: 
-    1. `cd docker`
-    1. `docker-compose up`
-1. Note: most of the scripts and projects assume the data is in `/workspace/datasets`, but have overrides to specify your own directories. You will need to download and plan accordingly.  
-1. Do your work per the Weekly Project     
+2. `pip install` all of the libraries you see in `.gitpod.Dockerfile`
+3. Setup your weekly python environments per the "Weekly Project" above.
+4. Run OpenSearch: 
+    A. `cd docker`
+    B. `docker-compose up`
+5. Note: most of the scripts and projects assume the data is in `/workspace/datasets`, but have overrides to specify your own directories. You will need to download and plan accordingly.  
+6. Do your work per the Weekly Project     
     
