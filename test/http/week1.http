@@ -124,3 +124,7 @@ DELETE {{url}}/bbuy_products
 ###
 
 GET {{url}}/bbuy_products/_count
+
+###
+
+GET {{url}}/bbuy_products/_mapping

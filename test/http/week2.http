@@ -1,0 +1,46 @@
+### check cluster
+
+GET {{url}}/_cat/health
+Content-Type: application/json
+
+
+### best buy data
+
+GET {{url}}/_cat/indices
+
+###
+
+DELETE {{url}}/bbuy_products
+
+###
+
+GET {{url}}/bbuy_products/_count
+
+###
+
+GET {{url}}/bbuy_products/_mapping
+
+### Relevance and Ranking
+
+
+GET {{url}}/bbuy_queries/_search
+
+{
+  "size": 0,
+  "aggs": {
+    "Query": {
+      "terms": {
+        "size": 10,
+        "field": "query.keyword"
+      },
+      "aggs":{
+        "Docs":{
+          "terms":{
+            "size": 5,
+            "field": "sku.keyword"
+          }
+        }
+      }
+    }
+  }
+}
