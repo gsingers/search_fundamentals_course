@@ -5,6 +5,7 @@ usage()
   exit 2
 }
 
+set -x
 PRODUCTS_JSON_FILE="${PROJECT_DIR}/opensearch/bbuy_products.json"
 QUERIES_JSON_FILE="${PROJECT_DIR}/opensearch/bbuy_queries.json"
 DATASETS_DIR="${PROJECT_DIR}/datasets"
@@ -59,7 +60,7 @@ fi
 
 if [ -f index_queries.py ]; then
   echo "Indexing queries data and writing logs to $LOGS_DIR/index_queries.log"
-  nohup python index_queries.py -s "$DATASETS_DIR/train_small.csv" > "$LOGS_DIR/index_queries.log" &
+  nohup python index_queries.py -s "$DATASETS_DIR/train.csv" > "$LOGS_DIR/index_queries.log" &
   if [ $? -ne 0 ] ; then
     exit 2
   fi

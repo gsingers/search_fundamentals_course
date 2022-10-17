@@ -1,4 +1,9 @@
 import math
+
+import numpy as np
+import pandas as pd
+
+
 # some helpful tools for dealing with queries
 def create_stats_query(aggs, extended=True):
     print("Creating stats query from %s" % aggs)
@@ -13,139 +18,123 @@ def create_stats_query(aggs, extended=True):
 
 
 # Hardcoded query here.  Better to use search templates or other query config.
-def create_query(user_query, filters, sort="_score", sortDir="desc", size=10, include_aggs=True, highlight=True, source=None):
+def create_query(
+    user_query,
+    filters,
+    sort="_score",
+    sortDir="desc",
+    size=10,
+    include_aggs=True,
+    highlight=True,
+    source=None,
+):
     query_obj = {
-        'size': size,
-        "sort":[
-            {sort: {"order": sortDir}}
-        ],
+        "size": size,
+        "sort": [{sort: {"order": sortDir}}],
         "query": {
             "function_score": {
                 "query": {
                     "bool": {
-                        "must": [
-
-                        ],
-                        "should":[ #
+                        "must": [],
+                        "should": [  #
                             {
                                 # Last gasp attempt at matching, based on the assumption the query is misspelled.
-                              "match": {
+                                "match": {
                                     "name": {
                                         "query": user_query,
-                                        "fuzziness": "1",
-                                        "prefix_length": 2, # short words are often acronyms or usually not misspelled, so don't edit
-                                        "boost": 0.01
+                                        "fuzziness": "2",
+                                        "prefix_length": 2,  # short words are often acronyms or usually not misspelled, so don't edit
+                                        "boost": 0.01,
                                     }
-                               }
+                                }
                             },
                             {
-                              "match_phrase": { # near exact phrase match, so boost this higher
+                                "match_phrase": {  # near exact phrase match, so boost this higher
                                     "name.hyphens": {
                                         "query": user_query,
-                                        "slop": 1,
-                                        "boost": 50
+                                        "slop": 2,
+                                        "boost": 50,
                                     }
-                               }
+                                }
                             },
                             # General purpose query that searches across a number of fields
                             {
-                              "multi_match": {
+                                "multi_match": {
                                     "query": user_query,
                                     "type": "phrase",
                                     "slop": "6",
                                     "minimum_should_match": "2<75%",
-                                    "fields": ["name^10", "name.hyphens^10", "shortDescription^5",
-                                       "longDescription^5", "department^0.5", "sku", "manufacturer", "features", "categoryPath"]
-                               }
+                                    "fields": [
+                                        "name^10",
+                                        "name.hyphens^10",
+                                        "shortDescription^5",
+                                        "longDescription^5",
+                                        "department^0.5",
+                                        "sku",
+                                        "manufacturer",
+                                        "features",
+                                        "categoryPath",
+                                    ],
+                                }
                             },
                             {
-                              "terms":{ # Lots of SKUs in the query logs, boost by it, split on whitespace so we get a list
-                                "sku": user_query.split(),
-                                "boost": 50.0
-                              }
+                                "terms": {  # Lots of SKUs in the query logs, boost by it, split on whitespace so we get a list
+                                    "sku": user_query.split(),
+                                    "boost": 50.0,
+                                }
                             },
-                            { # lots of products have hyphens in them or other weird casing things like iPad
-                              "match": {
+                            {  # lots of products have hyphens in them or other weird casing things like iPad
+                                "match": {
                                     "name.hyphens": {
                                         "query": user_query,
                                         "operator": "OR",
-                                        "minimum_should_match": "2<75%"
+                                        "minimum_should_match": "2<75%",
                                     }
-                               }
-                            }
+                                }
+                            },
                         ],
-                        "minimum_should_match": 1, # make sure at least one of the clauses above matches
-                        "filter": filters  #
+                        "minimum_should_match": 1,  # make sure at least one of the clauses above matches
+                        "filter": filters,  #
                     }
                 },
-                "boost_mode": "multiply", # how _score and functions are combined
-                "score_mode": "sum", # how functions are combined
+                "boost_mode": "multiply",  # how _score and functions are combined
+                "score_mode": "sum",  # how functions are combined
                 # Use a scaled sales rank as factor in scoring.  This helps popular items rise to the top while still matching on keywords
                 "functions": [
                     {
-                        "filter": {
-                            "exists": {
-                                "field": "salesRankShortTerm"
-                            }
-                        },
+                        "filter": {"exists": {"field": "salesRankShortTerm"}},
                         "gauss": {
-                            "salesRankShortTerm": {
-                                "origin": "1.0",
-                                "scale": "100"
-                            }
-                        }
+                            "salesRankShortTerm": {"origin": "1.0", "scale": "100"}
+                        },
                     },
                     {
-                        "filter": {
-                            "exists": {
-                                "field": "salesRankMediumTerm"
-                            }
-                        },
+                        "filter": {"exists": {"field": "salesRankMediumTerm"}},
                         "gauss": {
-                            "salesRankMediumTerm": {
-                                "origin": "1.0",
-                                "scale": "1000"
-                            }
-                        }
+                            "salesRankMediumTerm": {"origin": "1.0", "scale": "1000"}
+                        },
                     },
                     {
-                        "filter": {
-                            "exists": {
-                                "field": "salesRankLongTerm"
-                            }
-                        },
+                        "filter": {"exists": {"field": "salesRankLongTerm"}},
                         "gauss": {
-                            "salesRankLongTerm": {
-                                "origin": "1.0",
-                                "scale": "1000"
-                            }
-                        }
+                            "salesRankLongTerm": {"origin": "1.0", "scale": "1000"}
+                        },
                     },
-                    {
-                        "script_score": {
-                            "script": "0.0001"
-                        }
-                    }
-                ]
-
+                    {"script_score": {"script": "0.0001"}},
+                ],
             }
-        }
+        },
     }
     if user_query == "*" or user_query == "#":
-        #replace the bool
+        # replace the bool
         try:
             query_obj["query"] = {"match_all": {}}
         except:
             print("Couldn't replace query for *")
     if highlight:
         query_obj["highlight"] = {
-            "fields": {
-                "name": {},
-                "shortDescription": {},
-                "longDescription": {}
-            }
+            "fields": {"name": {}, "shortDescription": {}, "longDescription": {}}
         }
-    if source is not None: # otherwise use the default and retrieve all source
+    if source is not None:  # otherwise use the default and retrieve all source
         query_obj["_source"] = source
 
     if include_aggs:
@@ -154,60 +143,86 @@ def create_query(user_query, filters, sort="_score", sortDir="desc", size=10, in
 
 
 ##########
-# Week 2, Level 2: 
+# Week 2, Level 2:
 ##########
 # Give a user query from the UI and the query object we've built so far, adding in spelling suggestions
 def add_spelling_suggestions(query_obj, user_query):
     #### W2, L2, S1
-    print("TODO: IMPLEMENT ME")
-    #query_obj["suggest"] = {
-    #    "text": user_query,
-    #    "phrase_suggest": {
-
-    #    },
-    #    "term_suggest": {
-
-    #    }
-    #}
+    query_obj["suggest"] = {
+        "text": user_query,
+        "phrase_suggest": {
+            "phrase": {
+                "field": "suggest.trigrams",
+                "direct_generator": [
+                    {
+                        "field": "suggest.trigrams",
+                        "suggest_mode": "popular",
+                        "min_word_length": 2,
+                    }
+                ],
+                "highlight": {"pre_tag": "<em>", "post_tag": "</em>"},
+            }
+        },
+        "term_suggest": {
+            "term": {
+                "suggest_mode": "popular",
+                "min_word_length": 3,
+                "field": "suggest.text",
+            }
+        },
+        "autocomplete": {"completion": {"field": "suggest"}},
+    }
 
 
 # Given the user query from the UI, the query object we've built so far and a Pandas data GroupBy data frame,
 # construct and add a query that consists of the ids from the items that were clicked on by users for that query
 # priors_gb (loaded in __init__.py) is grouped on query and has a Series of SKUs/doc ids for every document that was cliecked on for this query
 def add_click_priors(query_obj, user_query, priors_gb):
+    print("User query: ", user_query)
     try:
         prior_clicks_for_query = priors_gb.get_group(user_query)
         if prior_clicks_for_query is not None and len(prior_clicks_for_query) > 0:
-            click_prior = ""
+            # click_prior = ""
             #### W2, L1, S1
             # Create a string object of SKUs and weights that will boost documents matching the SKU
-            print("TODO: Implement me")
+            # print("TODO: Implement me")
+            n_query = len(prior_clicks_for_query)
+            weight_df = (
+                prior_clicks_for_query.groupby("sku").agg(
+                    weight=pd.NamedAgg("sku", "count"),
+                )
+                / n_query
+            )
+            click_prior = " ".join(
+                [f"{sku}^{np.round(w, 5)}" for (sku, w) in weight_df.to_records()]
+            )
+
             if click_prior != "":
-                click_prior_query_obj = None # Implement a query object that matches on the ID or SKU with weights of
+                click_prior_query_obj = None  # Implement a query object that matches on the ID or SKU with weights of
                 # This may feel like cheating, but it's really not, esp. in ecommerce where you have all this prior data,
+
+                click_prior_query_obj = {
+                    "query_string": {
+                        "query": click_prior,
+                        "fields": ["sku"],
+                        "boost": 1000,
+                    }
+                }
+
                 if click_prior_query_obj is not None:
-                    query_obj["query"]["function_score"]["query"]["bool"]["should"].append(click_prior_query_obj)
+                    query_obj["query"]["function_score"]["query"]["bool"][
+                        "should"
+                    ].append(click_prior_query_obj)
     except KeyError as ke:
         print(ke)
         print(f"Can't process user_query: {user_query} for click priors")
         pass
 
 
-
-
 def add_aggs(query_obj):
     query_obj["aggs"] = {
-        "department": {
-            "terms": {
-                "field": "department.keyword",
-                "min_doc_count": 1
-            }
-        },
-        "missing_images": {
-            "missing": {
-                "field": "image"
-            }
-        },
+        "department": {"terms": {"field": "department.keyword", "min_doc_count": 1}},
+        "missing_images": {"missing": {"field": "image"}},
         "regularPrice": {
             "range": {
                 "field": "regularPrice",
@@ -218,13 +233,8 @@ def add_aggs(query_obj):
                     {"key": "$$$$", "from": 300, "to": 400},
                     {"key": "$$$$$", "from": 400, "to": 500},
                     {"key": "$$$$$$", "from": 500},
-                ]
+                ],
             },
-            "aggs": {
-                "price_stats": {
-                    "stats": {"field": "regularPrice"}
-                }
-            }
-        }
-
+            "aggs": {"price_stats": {"stats": {"field": "regularPrice"}}},
+        },
     }

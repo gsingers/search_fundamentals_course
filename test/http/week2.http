@@ -1,7 +1,6 @@
 ### check cluster
 
 GET {{url}}/_cat/health
-Content-Type: application/json
 
 
 ### best buy data
@@ -10,11 +9,15 @@ GET {{url}}/_cat/indices
 
 ###
 
-DELETE {{url}}/bbuy_products
+#DELETE {{url}}/bbuy_products
 
 ###
 
 GET {{url}}/bbuy_products/_count
+
+###
+
+GET {{url}}/bbuy_queries/_count
 
 ###
 
@@ -24,9 +27,10 @@ GET {{url}}/bbuy_products/_mapping
 
 
 GET {{url}}/bbuy_queries/_search
+Content-Type: application/json
 
 {
-  "size": 0,
+  "size": 0pho,
   "aggs": {
     "Query": {
       "terms": {
@@ -43,4 +47,60 @@ GET {{url}}/bbuy_queries/_search
       }
     }
   }
+}
+
+
+###
+
+GET {{url}}//bbuy_queries/_search?q=query.keyword:"2622037 2127204 2127213 2121716 2138291"
+Content-Type: application/json
+
+###
+
+GET {{url}}//bbuy_queries/_search?q=sku:2622037
+Content-Type: application/json
+
+###
+
+GET {{url}}/bbuy_products/_search
+Content-Type: application/json
+
+{
+    "query": {
+        "match": {
+            "name": "i phone"
+        }
+    },
+    "_source": "name"
+}
+
+###
+
+GET {{url}}/bbuy_products/_search
+Content-Type: application/json
+
+{
+    "query": {
+        "match": {
+            "name.hyphens": "i-phone"
+        }
+    },
+    "_source": "name"
+}
+
+###
+
+GET {{url}}/bbuy_products/_search
+Content-Type: application/json
+
+{
+    "query": {
+        "match": {
+            "name":{
+                "query": "iphone4",
+                "fuzziness": 2
+            }
+        }
+    },
+    "_source": "name"
 }

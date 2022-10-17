@@ -1,74 +1,87 @@
 {
-  "settings": {
-    "index.refresh_interval": "5s",
-    "analysis": {
-      "analyzer": {
-        "trigram": {
-            "type": "custom",
-            "tokenizer": "standard",
-            "filter": ["lowercase","shingle"]
-          }
-      },
-      "filter": {
-        "shingle": {
-            "type": "shingle",
-            "min_shingle_size": 2,
-            "max_shingle_size": 3
-          }
-      }
+    "settings": {
+        "index.refresh_interval": "5s",
+        "analysis": {
+            "analyzer": {
+                "trigram": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "shingle"
+                    ]
+                }
+            },
+            "filter": {
+                "shingle": {
+                    "type": "shingle",
+                    "min_shingle_size": 2,
+                    "max_shingle_size": 3
+                }
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "@timestamp": {
+                "type": "date"
+            },
+            "@version": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            },
+            "category": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            },
+            "query": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    },
+                    "stemmed": {
+                        "type": "text",
+                        "analyzer": "english"
+                    }
+                }
+            },
+            "suggest": {
+                "type": "completion",
+                "fields": {
+                    "trigrams": {
+                        "type": "text",
+                        "analyzer": "trigram"
+                    },
+                    "text": {
+                        "type": "text",
+                        "analyzer": "english"
+                    }
+                }
+            },
+            "canonical": {
+                "type": "text"
+            },
+            "sku": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            }
+        }
     }
-  },
-  "mappings": {
-    "properties": {
-      "@timestamp": {
-        "type": "date"
-      },
-      "@version": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "category": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "query": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          },
-          "stemmed": {
-            "type": "text",
-            "analyzer": "english"
-          }
-        }
-      },
-      "TODO: REPLACE WITH SUGGEST": {
-        "REPLACE": "REPLACE"
-      },
-      "canonical": {
-        "type": "text"
-      },
-      "sku": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      }
-    }
-  }
 }
