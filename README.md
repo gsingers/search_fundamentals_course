@@ -23,7 +23,7 @@ as there is often more than one way of doing things in search.
 
 You will also find several supporting directories and files for [Docker](https://docker.org) and [Gitpod](https://gitpod.io).
 
-You can use the included `Makefile` to interact with the project, including running pyenv, Flask, and re-indexing the data. Run all `make` commands at the root of the repo so Makefile can pick them up, i.e. `/workspace/search_fundamentals_course`.
+You can also use the included `Makefile` to interact with the project, including running pyenv, Flask, and re-indexing the data. Run all `make` commands at the root of the repo so Makefile can pick them up, i.e. `/workspace/search_fundamentals_course`.
 
 # Prerequisites
 
