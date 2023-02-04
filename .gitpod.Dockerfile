@@ -3,6 +3,7 @@ FROM gitpod/workspace-full:latest
 RUN sudo apt-get install -y graphviz
 
 # Move where Pyenv is stored
+RUN git clone https://github.com/pyenv/pyenv-virtualenv.git /home/gitpod/.pyenv/plugins/pyenv-virtualenv
 #RUN sudo mv /home/gitpod/.pyenv /workspace/pyenv
 #RUN sudo ln -s /workspace/pyenv /home/gitpod/.pyenv
 
