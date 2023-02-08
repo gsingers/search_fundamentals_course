@@ -41,7 +41,11 @@
           {% if hit._source.department[0] %}
           <div>
             <span class="search-result-header">Department</span>:
-              {{ hit._source.department[0] }}
+              {% if hit.highlight and hit.highlight.department %}
+                {{ hit.highlight.department[0] }}
+              {% else%}
+                {{ hit._source.department[0] }}
+              {% endif %}
           </div>
           {% endif %}
           {% if hit._source.customerReviewCount %}
