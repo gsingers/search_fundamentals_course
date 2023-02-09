@@ -35,9 +35,7 @@
           }
         }
       },
-      "categoryPathCount": {
-        "type": "float"
-      },
+      "categoryPathCount": {"type": "integer"},
       "categoryPathIds": {
         "type": "text",
         "fields": {
@@ -252,7 +250,7 @@
         }
       },
       "url": {"type": "text"},
-      "weight": {"type": "float"},
+      "weight": {"type": "text"},
       "width": {"type": "text"}
   }
   }

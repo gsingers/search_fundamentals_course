@@ -11,6 +11,7 @@ import logging
 
 from time import perf_counter
 import concurrent.futures
+from opensearch import get_opensearch
 
 # Test hello commit
 
@@ -80,19 +81,21 @@ mappings =  [
 
         ]
 
-def get_opensearch():
-    host = 'localhost'
-    port = 9200
-    auth = ('admin', 'admin')
-    #### Step 2.a: Create a connection to OpenSearch
-    client = OpenSearch(
-        hosts=[{'host': host, 'port': port}], 
-        http_auth=auth,
-        use_ssl=True,
-        verify_certs=False,
-        ssl_assert_hostname=False,
-        ssl_show_warn=False,)
-    return client
+# def get_opensearch():
+#     host = 'localhost'
+#     port = 9200
+#     auth = ('admin', 'admin')
+#     #### Step 2.a: Create a connection to OpenSearch
+#     client = OpenSearch(
+#         hosts=[{'host': host, 'port': port}], 
+#         http_auth=auth,
+#         use_ssl=True,
+#         verify_certs=False,
+#         ssl_assert_hostname=False,
+#         ssl_show_warn=False,)
+#     return client
+
+import pdb
 
 
 def index_file(file, index_name):
@@ -103,23 +106,40 @@ def index_file(file, index_name):
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
+    client = get_opensearch()
+
     for child in children:
         doc = {}
+        
         for idx in range(0, len(mappings), 2):
+            # pdb.set_trace()
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
-            doc[key] = child.xpath(xpath_expr)
-            doc["_index"] = index_name
-        # print(doc)
+            value = child.xpath(xpath_expr)
+            if type(value) is list:
+                if key in {"accessories", "frequentlyPurchasedWith", "categoryPath", "relatedProducts", "features", "categoryPathIds"}:
+                    doc[key] = value
+                else:
+                    doc[key] = value[0] if value else None
+            else:
+                doc[key] = value
+
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
+        
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = {
-
-        }
+        doc["_index"] = index_name
         docs.append(doc)
-    client = get_opensearch()
-    bulk(client, docs[:100])
+        
+        if len(docs) == 2000:
+            bulk(client, docs)
+            docs_indexed += len(docs)
+            docs.clear()
+    
+    if docs:
+        bulk(client, docs)
+        docs_indexed += len(docs)
+    
     return docs_indexed
 
 

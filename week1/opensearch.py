@@ -2,7 +2,7 @@ from flask import g, current_app
 from opensearchpy import OpenSearch
 
 
-def _get_opensearch():
+def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
@@ -17,15 +17,15 @@ def _get_opensearch():
         )
 
 
-def get_opensearch():
-# Create an OpenSearch client instance and put it into Flask shared space for use by the application
-    if 'opensearch' not in g:
-        g.opensearch = _get_opensearch()    
-    return g.opensearch
+# def get_opensearch():
+# # Create an OpenSearch client instance and put it into Flask shared space for use by the application
+#     if 'opensearch' not in g:
+#         g.opensearch = _get_opensearch()    
+#     return g.opensearch
 
 
 def create_index(index_name, index_body):
-    client = _get_opensearch()
+    client = get_opensearch()
     
     if client.indices.exists(index_name):
         client.indices.delete(index_name)
