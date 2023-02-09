@@ -7,7 +7,7 @@ export WEEK1 := week1
 export WEEK2 := week2
 
 SHELL:=/bin/bash
-VENV_DIR=$(shell pyenv root)/versions/search_fundamentals
+VENV_DIR=venv
 PYTHON=${VENV_DIR}/bin/python
 
 week1: 
