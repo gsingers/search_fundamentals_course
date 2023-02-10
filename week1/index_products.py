@@ -56,7 +56,7 @@ def index_file(file, index_name, mappings):
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = {"_id": doc["productId"][0],
+        the_doc = {#"_id": doc["productId"][0],
                    "_index": index_name
                    }
 
@@ -65,12 +65,15 @@ def index_file(file, index_name, mappings):
         docs.append(the_doc)
 
         if len(docs) == 2000:
-            n_success, _ = bulk(client, docs)
+            n_success, failures = bulk(client, docs)
             docs = []
             docs_indexed += n_success
-
+            if failures:
+                print(failures)
     # index the last elements which do not add up to 2000
-    n_success, _ = bulk(client, docs)
+    n_success, failures = bulk(client, docs)
+    if failures:
+        print(failures)
     docs_indexed += n_success
 
     return docs_indexed

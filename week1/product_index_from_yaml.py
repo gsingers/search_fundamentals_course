@@ -20,7 +20,9 @@ def main(source_yaml: str, out_json: str):
     for mapping in source.values():
         del mapping["xml_field"]
 
-    index_beginning = {"settings": {"index.refresh_interval": "5s"}, "mappings": {"properties": source}}
+    index_beginning = {
+        "settings": {"index.refresh_interval": "5s"},
+        "mappings": {"properties": source}}
 
     with open(out_json, "w") as f:
         json.dump(index_beginning, f, indent=2)

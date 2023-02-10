@@ -54,11 +54,10 @@ def process_filters(filters_input):
     return filters, display_filters, applied_filters
 
 
-
 # Our main query route.  Accepts POST (via the Search box) and GETs via the clicks on aggregations/facets
 @bp.route('/query', methods=['GET', 'POST'])
 def query():
-    opensearch = get_opensearch() # Load up our OpenSearch client from the opensearch.py file.
+    opensearch = get_opensearch()  # Load up our OpenSearch client from the opensearch.py file.
     # Put in your code to query opensearch.  Set error as appropriate.
     error = None
     user_query = None
@@ -91,13 +90,14 @@ def query():
     else:
         query_obj = create_query("*", [], sort, sortDir)
 
-    print("query obj: {}".format(query_obj))
+    print(query_obj)
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(query_obj, "bbuy_products")
+
     # Postprocess results here if you so desire
 
-    #print(response)
+    # print(response)
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
@@ -109,13 +109,79 @@ def query():
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
-        'size': 10,
+        "size": 10,
+        "sort": [{sort: sortDir}],
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "function_score": {
+                "query": {
+
+                    "bool": {
+                        "must": [
+                            {
+                                "query_string": {
+
+                                    "phrase_slop": 3,
+                                    # "default_operator": "AND",
+                                    "fields": ["name^100", "shortDescription^50", "longDescription^10", "department"],
+                                    "query": user_query
+                                }
+                            }
+                        ],
+
+                        "filter": filters if filters else []
+                    }
+                },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                    {"field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"}
+                    },
+                    {"field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"}
+                    },
+                    {"field_value_factor": {
+                        "field": "salesRankShortTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"}
+                    }]
+            }},
+        "highlight": {
+            "fields": {"name": {}, "shortDescription": {}, "longDescription": {}}
         },
         "aggs": {
-            #### Step 4.b.i: create the appropriate query and aggregations here
 
-        }
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {"key": "< 5$", "to": 5},
+                        {"key": "5$ – 20$", "from": 5, "to": 20},
+                        {"key": "20$ – 100$", "from": 20, "to": 100},
+                        {"key": "100$ – 1.000$", "from": 100, "to": 1000},
+                        {"key": "1.000$ – 10.000$", "from": 1000, "to": 10000},
+                        {"key": "10.000$+", "from": 10000}
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department.keyword",
+                    "size": 10,
+                    "missing": "N/A",
+                    "min_doc_count": 0
+                }
+
+            },
+            "missing_images": {
+                "missing": {"field": "image"}
+            }
+
+        },
     }
+
     return query_obj

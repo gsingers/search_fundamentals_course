@@ -16,7 +16,7 @@ active:
 
 artistName:
   type: text
-  analyzer: "snowball"
+  analyzer: "english"
   fields:
     keyword:
       ignore_above: 256
@@ -28,7 +28,8 @@ bestBuyItemId:
   xml_field: bestBuyItemId/text()
 
 bestSellingRank:
-  type: integer
+  type: rank_feature
+  positive_score_impact: false
   xml_field: bestSellingRank/text()
 
 categoryLeaf:
@@ -110,6 +111,7 @@ department:
       type: keyword
   type: text
   xml_field: department/text()
+
 departmentId:
   type: integer
   xml_field: departmentId/text()
@@ -135,7 +137,7 @@ digital:
 
 features:
   type: text
-  analyzer: snowball
+  analyzer: "english"
   fields:
     keyword:
       ignore_above: 256
@@ -144,7 +146,7 @@ features:
 
 # this is a list of skus
 frequentlyPurchasedWith:
-  type: integer
+  type: long
   xml_field: frequentlyPurchasedWith/*/text()
 
 height:
@@ -175,7 +177,7 @@ inStorePickup:
 
 longDescription:
   type: text
-  analyzer: snowball
+  analyzer: "english"
   fields:
     keyword:
       ignore_above: 256
@@ -184,8 +186,6 @@ longDescription:
 
 longDescriptionHtml:
   type: text
-  #tokenizer: "keyword"
-  #char_filter: ["html_strip"]
   fields:
     keyword:
       ignore_above: 256
@@ -206,7 +206,7 @@ modelNumber:
 
 name:
   type: text
-  analyzer: snowball
+  analyzer: "english"
   fields:
     keyword:
       ignore_above: 256
@@ -221,6 +221,8 @@ onlineAvailability:
   type: boolean
   xml_field: onlineAvailability/text()
 
+# I wanted to use this field as _id, but the number of products in the index decrease
+# Some tests show that the products are almost identical but not completely (eg. dvd / blue-ray)
 productId:
   type: long
   xml_field: productId/text()
@@ -266,7 +268,7 @@ shippingWeight:
   xml_field: shippingWeight/text()
 
 shortDescription:
-  analyzer: snowball
+  analyzer: "english"
   type: text
   fields:
     keyword:
@@ -283,7 +285,7 @@ shortDescriptionHtml:
   xml_field: shortDescriptionHtml/text()
 
 sku:
-  type: integer
+  type: long
   xml_field: sku/text()
 
 startDate:
