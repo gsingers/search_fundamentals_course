@@ -118,8 +118,14 @@ def index_file(file, index_name):
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
         the_doc = {}
         for k,v in doc.items():
-            print(f"{k} -> {v}")
-        print("----")
+            if type(v) == list:
+                if v:
+                    values = ','.join(v)
+                    the_doc[k] = values
+            else:
+                 the_doc[k] = v
+        print(the_doc)
+        print("-----")
         docs.append(the_doc)
         count += 1
         if count == 10:
