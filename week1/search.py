@@ -94,7 +94,7 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = opensearch.search(create_query(None, None), index='products')   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(create_query(None, None), index='bbuy_products')   # TODO: Replace me with an appropriate call to OpenSearch
     # Postprocess results here if you so desire
 
     #print(response)

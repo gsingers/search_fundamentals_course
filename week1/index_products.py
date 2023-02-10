@@ -150,6 +150,7 @@ def index_file(file, index_name):
 def main(source_dir: str, index_name: str, workers: int):
 
     files = glob.glob(source_dir + "/*.xml")
+    logger.info(f"indexing {len(files)} files")
     docs_indexed = 0
     start = perf_counter()
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
