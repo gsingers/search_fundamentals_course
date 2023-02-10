@@ -105,23 +105,27 @@ def index_file(file, index_name):
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
-    print(len(children))
+    count = 0
     for child in children:
         doc = {}
         for idx in range(0, len(mappings), 2):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-            if doc[key]:
-                print(doc[key][0])
-        print(doc)
+        
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = None
+        the_doc = {}
+        for k,v in doc.items():
+            print(f"{k} -> {v}")
+        print("----")
         docs.append(the_doc)
-        break
+        count += 1
+        if count == 10:
+            break
 
+    # print(docs)
     return docs_indexed
 
 @click.command()
