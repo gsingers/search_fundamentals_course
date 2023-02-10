@@ -124,7 +124,21 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {"to": 1},
+                        {"from": 1, "to": 1000},
+                        {"from": 1000}
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department"
+                    }
+            }
         }
     }
     print(query_obj)

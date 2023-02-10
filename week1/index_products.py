@@ -11,7 +11,7 @@ import logging
 
 from time import perf_counter
 import concurrent.futures
-from opensearch import get_opensearch
+from opensearch import get_opensearch, create_index
 
 # Test hello commit
 
@@ -142,13 +142,17 @@ def index_file(file, index_name):
     
     return docs_indexed
 
+import json
+
 
 @click.command()
 @click.option('--source_dir', '-s', help='XML files source directory')
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
-
+    with open("../opensearch/bbuy_products.json") as f:
+        create_index(index_name, json.load(f))
+    
     files = glob.glob(source_dir + "/*.xml")
     logger.info(f"indexing {len(files)} files")
     docs_indexed = 0
