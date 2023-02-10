@@ -85,7 +85,15 @@ def get_opensearch():
     port = 9200
     auth = ('admin', 'admin')
     #### Step 2.a: Create a connection to OpenSearch
-    client = None
+    client = OpenSearch(
+            hosts = [{'host': host, 'port': port}],
+            http_compress=True,
+            http_auth = auth,
+            use_ssl = True,
+            verify_certs = True,
+            ssl_assert_hostname=False,
+            ssl_show_warn=False,
+        )
     return client
 
 
@@ -97,18 +105,22 @@ def index_file(file, index_name):
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
+    print(len(children))
     for child in children:
         doc = {}
         for idx in range(0, len(mappings), 2):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        #print(doc)
+            if doc[key]:
+                print(doc[key][0])
+        print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
         the_doc = None
         docs.append(the_doc)
+        break
 
     return docs_indexed
 
@@ -118,16 +130,18 @@ def index_file(file, index_name):
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
 
-    files = glob.glob(source_dir + "/*.xml")
+    # files = glob.glob(source_dir + "/*.xml")
+    file = "/workspace/datasets/product_data/products/products_0001_2570_to_430420.xml"
     docs_indexed = 0
-    start = perf_counter()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        futures = [executor.submit(index_file, file, index_name) for file in files]
-        for future in concurrent.futures.as_completed(futures):
-            docs_indexed += future.result()
+    # start = perf_counter()
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+    #     futures = [executor.submit(index_file, file, index_name) for file in files]
+    #     for future in concurrent.futures.as_completed(futures):
+    #         docs_indexed += future.result()
 
-    finish = perf_counter()
-    logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
+    # finish = perf_counter()
+    # logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
+    index_file(file, "test")
 
 if __name__ == "__main__":
     main()
