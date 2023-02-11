@@ -93,9 +93,14 @@ def query():
 
     #### Step 4.b.ii
     try:
-        price_percentiles_query = create_price_percentiles_query(user_query, filters)
-        price_percentiles_response = opensearch.search(body=price_percentiles_query, index="bbuy_products")
-        unique_price_percentiles = sorted(list(set(dict(price_percentiles_response["aggregations"]["percentilesRegularPrice"]["values"]).values())))
+        price_range_filter = [filter for filter in test if "range" in filter and "regularPrice" in filter["range"]]
+        if price_range_filter:
+            # do not calculate or update price_percentiles if there is already a price filter applied
+            pass
+        else:
+            price_percentiles_query = create_price_percentiles_query(user_query, filters)
+            price_percentiles_response = opensearch.search(body=price_percentiles_query, index="bbuy_products")
+            unique_price_percentiles = sorted(list(set(dict(price_percentiles_response["aggregations"]["percentilesRegularPrice"]["values"]).values())))
     except Exception as err:
         # will use the default unique_price_percentiles
         logging.exception("Error: Failed to generate unique_price_percentiles\n%s",err)

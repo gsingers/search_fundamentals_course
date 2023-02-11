@@ -1,4 +1,36 @@
 {
+  "settings": {
+    "index.refresh_interval": "5s",
+    "analysis": {
+      "analyzer": {
+        "custom_analyzer": {
+          "tokenizer": "ngram_tokenizer",
+          "filter": ["lowercase", "kstem"],
+          "char_filter": [
+            "remove_hypens_without_space"
+          ]
+        }
+      },
+      "char_filter": {
+        "remove_hypens_without_space": {
+          "type": "pattern_replace",
+          "pattern": "(\\w+)(-)(\\w+)",
+          "replacement": "$1$3"
+        }
+      }, 
+      "tokenizer": {
+        "ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 3,
+          "max_gram": 3,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
+      }
+    }
+  },
   "mappings": {
     "properties": {
       "accessories": {
@@ -160,7 +192,7 @@
       },
       "longDescription": {
         "type": "text",
-        "analyzer": "english"
+        "analyzer": "custom_analyzer"
       },
       "longDescriptionHtml": {
         "type": "text"
@@ -188,7 +220,7 @@
       "name": 
       {
         "type": "text",
-        "analyzer": "english",
+        "analyzer": "custom_analyzer",
         "fielddata": true,
         "fields": {
           "keyword": {
@@ -239,7 +271,7 @@
       },
       "shortDescription": {
         "type": "text",
-        "analyzer": "english"
+        "analyzer": "custom_analyzer"
       },
       "shortDescriptionHtml": {
         "type": "text"
@@ -298,8 +330,5 @@
         }
       }
     }
-  },
-  "settings": {
-    "index.refresh_interval": "5s"
   }
 }
