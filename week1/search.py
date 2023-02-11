@@ -128,9 +128,12 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                 "range": {
                     "field": "regularPrice",
                     "ranges": [
-                        {"to": 1},
-                        {"from": 1, "to": 1000},
-                        {"from": 1000}
+                        {"from": 0, "to": 100, "key": "$"},
+                        {"from": 100, "to": 200, "key": "$$"},
+                        {"from": 200, "to": 300, "key": "$$$"},
+                        {"from": 300, "to": 400, "key": "$$$$"},
+                        {"from": 400, "to": 500, "key": "$$$$$"},
+                        {"from": 500, "key": "$$$$$$"}
                     ]
                 }
             },
