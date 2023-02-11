@@ -1,6 +1,7 @@
 #
 # The main search hooks for the Search Flask application.
 #
+import math
 from flask import (
     Blueprint, redirect, render_template, request, url_for
 )
@@ -68,6 +69,7 @@ def query():
     filters = None
     sort = "_score"
     sortDir = "desc"
+    unique_price_percentiles = [100, 200, 300, 400, 500]
     if request.method == 'POST':  # a query has been submitted
         user_query = request.form['query']
         if not user_query:
@@ -78,7 +80,6 @@ def query():
         sortDir = request.form["sortDir"]
         if not sortDir:
             sortDir = "desc"
-        query_obj = create_query(user_query, [], sort, sortDir)
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
         filters_input = request.args.getlist("filter.name")
@@ -86,14 +87,15 @@ def query():
         sortDir = request.args.get("sortDir", sortDir)
         if filters_input:
             (filters, display_filters, applied_filters) = process_filters(filters_input)
-
-        query_obj = create_query(user_query, filters, sort, sortDir)
     else:
-        query_obj = create_query("*", [], sort, sortDir)
-
-    print("query obj: {}".format(query_obj))
+        user_query = "*"
 
     #### Step 4.b.ii
+    price_percentiles_query = create_price_percentiles_query(user_query, filters)
+    price_percentiles_response = opensearch.search(body=price_percentiles_query, index="bbuy_products")
+    unique_price_percentiles = sorted(list(set(dict(price_percentiles_response["aggregations"]["percentilesRegularPrice"]["values"]).values())))
+    query_obj = create_query(user_query, filters, sort, sortDir, unique_price_percentiles)
+    print("query obj: {}".format(query_obj))
     response = opensearch.search(body=query_obj, index="bbuy_products")
     # Postprocess results here if you so desire
 
@@ -106,10 +108,9 @@ def query():
         redirect(url_for("index"))
 
 
-def create_query(user_query, filters, sort="_score", sortDir="desc"):
-    print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
-    query_obj = {
-        'size': 10,
+def create_search_query(user_query, filters):
+    return {
+        "size": 10,
         "query": {
             "bool": {
                 "must": [
@@ -124,6 +125,43 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                 "filter": filters if filters else [],
             }
         },
+    }
+
+def map_price_percentiles_to_ranges(unique_price_percentiles: list[int]):
+    previous_value = 0
+    ranges = []
+    if len(unique_price_percentiles) == 1: 
+        ranges.append({ "key": "$", "from": math.floor(unique_price_percentiles[0])})
+    else:   
+        for index, raw_value in enumerate(unique_price_percentiles):
+            current_value = math.ceil(raw_value)
+            if index == 0:
+                ranges.append({'key':(index + 1) * '$', "to": current_value})
+            else: 
+                ranges.append({'key':(index + 1) * '$', 'from':previous_value, "to": current_value})
+
+            previous_value = current_value
+        ranges.append({'key':(len(unique_price_percentiles) + 1) * '$', 'from':previous_value})
+
+    return ranges
+
+def create_price_percentiles_query(user_query, filters):
+    return {
+        **create_search_query(user_query=user_query, filters=filters),
+        "aggs": {
+            "percentilesRegularPrice": {
+                "percentiles": {
+                    "field": "regularPrice", 
+                    "percents": [25, 50, 75, 95, 99]         
+                }
+            }
+        }
+    }
+
+def create_query(user_query, filters, sort, sortDir, unique_price_percentiles: list[int]):
+    print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
+    query_obj = {
+        **create_search_query(user_query=user_query, filters=filters),
         "sort": [
             {
                 f"{sort}": {
@@ -158,20 +196,8 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             "regularPrice": {
                 "range": {
                     "field": "regularPrice",
-                    "ranges": [
-                        {"key": "$", "from": 0, "to": 100},
-                        {"key": "$$", "from": 100, "to": 200},
-                        {"key": "$$$", "from": 200, "to": 300},
-                        {"key": "$$$$", "from": 300, "to": 400},
-                        {"key": "$$$$$", "from": 400, "to": 500},
-                        {"key": "$$$$$$", "from": 500},
-                    ]
+                    "ranges": map_price_percentiles_to_ranges(unique_price_percentiles)
                 },
-                "aggs": {
-                    "price_stats": {
-                        "stats": {"field": "regularPrice"}
-                    }
-                }
             }
         }
     }
