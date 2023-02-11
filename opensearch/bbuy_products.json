@@ -4,7 +4,7 @@
     "analysis": {
       "analyzer": {
         "custom_analyzer": {
-          "tokenizer": "ngram_tokenizer",
+          "tokenizer": "classic_tokenizer",
           "filter": ["lowercase", "kstem"],
           "char_filter": [
             "remove_hypens_without_space"
@@ -19,14 +19,8 @@
         }
       }, 
       "tokenizer": {
-        "ngram_tokenizer": {
-          "type": "ngram",
-          "min_gram": 3,
-          "max_gram": 3,
-          "token_chars": [
-            "letter",
-            "digit"
-          ]
+        "classic_tokenizer": {
+          "type": "classic"
         }
       }
     }
