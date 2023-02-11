@@ -16,6 +16,7 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 # applied_filters -- return a String that is appropriate for inclusion in a URL as part of a query string.  This is basically the same as the input query string
 def process_filters(filters_input):
     # Filters look like: &filter.name=regularPrice&regularPrice.key={{ agg.key }}&regularPrice.from={{ agg.from }}&regularPrice.to={{ agg.to }}
+    # &query=*&filter.name=regularPrice&regularPrice.type=range&regularPrice.key=0.0-25.0&regularPrice.from=0.0&regularPrice.to=25.0&regularPrice.displayName=Price
     filters = []
     display_filters = []  # Also create the text we will use to display the filters that are applied
     applied_filters = ""
@@ -66,6 +67,7 @@ def query():
     display_filters = None
     applied_filters = ""
     filters = None
+    print("============", filters)
     sort = "_score"
     sortDir = "desc"
     if request.method == 'POST':  # a query has been submitted
@@ -94,10 +96,10 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(body=query_obj)
     # Postprocess results here if you so desire
 
-    #print(response)
+    # print(response)
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
@@ -111,11 +113,101 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+        "function_score": {
+            "query": {
+                "query_string": {
+                    "query": user_query,
+                    "default_operator": "OR",
+                    "fields": ["name^100", "shortDescription^50", "longDescription^10"],
+                    "phrase_slop": 3,
+                },
+            },
+            "functions": [
+                {
+                    "field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "modifier": "reciprocal",
+                        "missing": 100000000
+                    }
+                },
+                {
+                    "field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "modifier": "reciprocal",
+                        "missing": 100000000
+                    }
+                },
+
+            ],
+            "score_mode": "avg",
+            "boost_mode": "multiply"
+        }},
+        "highlight": {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            },
+            "pre_tags": ["<b>"],
+            "post_tags": ["</b>"]
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "from": 0,
+                            "to": 25
+                        },
+                        {
+                            "from": 25,
+                            "to": 50
+                        },
+                        {
+                            "from": 50,
+                            "to": 100
+                        },
+                        {
+                            "from": 100,
+                            "to": 200
+                        },
+                        {
+                            "from": 200,
+                            "to": 500
+                        },
+                        {
+                            "from": 500,
+                            "to": 1000
+                        },
+                        {
+                            "from": 1000,
+                        }
+                    ]
+            }
+            },
+            "department": {
+                "terms": {
+                    "field": "department",
+                    "size": 10
+                }
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "image"
+                }
+            }
         }
     }
+
+    if filters:
+        query_obj["query"] = {"bool": {"filter": filters}}
+
+    if sort == "name":
+        query_obj["sort"] = [{"name": {"order": sortDir}}]
+
+    if sort == "regularPrice":
+        query_obj["sort"] = [{"regularPrice": {"order": sortDir}}]
+
     return query_obj
