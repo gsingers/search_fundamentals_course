@@ -29,8 +29,7 @@
           "keyword":{
             "type": "keyword"
           }
-        },
-        "analyzer": "snowball"
+        }
       },
       "relatedProducts":{
         "type": "text",
@@ -281,8 +280,7 @@
           "keyword": {
             "type": "keyword"
           }
-        },
-        "analyzer": "snowball"
+        }
       },
       "color":{
         "type": "text",
@@ -293,16 +291,36 @@
         }
       },
       "depth":{
-        "type": "float"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "height":{
-        "type": "float"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "weight":{
-        "type": "float"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "width":{
-        "type": "float"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
       },
       "sku": {
         "type": "text",
