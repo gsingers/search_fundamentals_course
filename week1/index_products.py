@@ -7,6 +7,7 @@ import click
 import glob
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
+from opensearchpy.helpers.errors import BulkIndexError
 import logging
 
 from time import perf_counter
@@ -89,10 +90,10 @@ def get_opensearch():
             hosts = [{'host': host, 'port': port}],
             http_compress=True,
             http_auth = auth,
-            use_ssl = True,
-            verify_certs = True,
+            use_ssl=True,
+            verify_certs=False,
             ssl_assert_hostname=False,
-            ssl_show_warn=False,
+            ssl_show_warn=False
         )
     return client
 
@@ -105,18 +106,21 @@ def index_file(file, index_name):
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
-    count = 0
     for child in children:
         doc = {}
         for idx in range(0, len(mappings), 2):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        
+        #print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = {}
+        the_doc = {
+            "id": doc['productId'][0],
+            "_index": index_name
+        }
+
         for k,v in doc.items():
             if type(v) == list:
                 if v:
@@ -124,14 +128,17 @@ def index_file(file, index_name):
                     the_doc[k] = values
             else:
                  the_doc[k] = v
-        print(the_doc)
-        print("-----")
+        
         docs.append(the_doc)
-        count += 1
-        if count == 10:
-            break
-
-    # print(docs)
+        l = len(docs)
+        if l == 2000:
+            try:
+                resp = bulk(client, docs)
+                docs_indexed += resp[0]
+            except BulkIndexError as e:
+                logger.error(e)
+                docs_indexed += l - len(e.errors)
+    
     return docs_indexed
 
 @click.command()
@@ -140,18 +147,18 @@ def index_file(file, index_name):
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
 
-    # files = glob.glob(source_dir + "/*.xml")
-    file = "/workspace/datasets/product_data/products/products_0001_2570_to_430420.xml"
+    files = glob.glob(source_dir + "/*.xml")
+    # file = "/workspace/datasets/product_data/products/products_0001_2570_to_430420.xml"
     docs_indexed = 0
-    # start = perf_counter()
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-    #     futures = [executor.submit(index_file, file, index_name) for file in files]
-    #     for future in concurrent.futures.as_completed(futures):
-    #         docs_indexed += future.result()
+    start = perf_counter()
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+        futures = [executor.submit(index_file, file, index_name) for file in files]
+        for future in concurrent.futures.as_completed(futures):
+            docs_indexed += future.result()
 
-    # finish = perf_counter()
-    # logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
-    index_file(file, "test")
+    finish = perf_counter()
+    logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
+    # index_file(file, "test-index")
 
 if __name__ == "__main__":
     main()
