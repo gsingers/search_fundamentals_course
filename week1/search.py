@@ -1,6 +1,7 @@
 #
 # The main search hooks for the Search Flask application.
 #
+import logging
 import math
 from flask import (
     Blueprint, redirect, render_template, request, url_for
@@ -91,12 +92,21 @@ def query():
         user_query = "*"
 
     #### Step 4.b.ii
-    price_percentiles_query = create_price_percentiles_query(user_query, filters)
-    price_percentiles_response = opensearch.search(body=price_percentiles_query, index="bbuy_products")
-    unique_price_percentiles = sorted(list(set(dict(price_percentiles_response["aggregations"]["percentilesRegularPrice"]["values"]).values())))
-    query_obj = create_query(user_query, filters, sort, sortDir, unique_price_percentiles)
-    print("query obj: {}".format(query_obj))
-    response = opensearch.search(body=query_obj, index="bbuy_products")
+    try:
+        price_percentiles_query = create_price_percentiles_query(user_query, filters)
+        price_percentiles_response = opensearch.search(body=price_percentiles_query, index="bbuy_products")
+        unique_price_percentiles = sorted(list(set(dict(price_percentiles_response["aggregations"]["percentilesRegularPrice"]["values"]).values())))
+    except Exception as err:
+        # will use the default unique_price_percentiles
+        logging.exception("Error: Failed to generate unique_price_percentiles\n%s",err)
+   
+    try:
+        query_obj = create_query(user_query, filters, sort, sortDir, unique_price_percentiles)
+        print("query obj: {}".format(query_obj))
+        response = opensearch.search(body=query_obj, index="bbuy_products")
+    except Exception as err:
+        error = err
+        logging.exception("Error: Failed to execute query to opensearch\n%s",err)
     # Postprocess results here if you so desire
 
     #print(response)
@@ -105,7 +115,7 @@ def query():
                                display_filters=display_filters, applied_filters=applied_filters,
                                sort=sort, sortDir=sortDir)
     else:
-        redirect(url_for("index"))
+        return redirect(url_for("query"))
 
 
 def create_search_query(user_query, filters):
@@ -130,8 +140,8 @@ def create_search_query(user_query, filters):
 def map_price_percentiles_to_ranges(unique_price_percentiles: list[int]):
     previous_value = 0
     ranges = []
-    if len(unique_price_percentiles) == 1: 
-        ranges.append({ "key": "$", "from": math.floor(unique_price_percentiles[0])})
+    if len(unique_price_percentiles) <= 1: 
+        ranges.append({ "key": "$", "from": math.floor(unique_price_percentiles[0]) if unique_price_percentiles[0] else 0})
     else:   
         for index, raw_value in enumerate(unique_price_percentiles):
             current_value = math.ceil(raw_value)
