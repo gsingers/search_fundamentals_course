@@ -4,7 +4,7 @@
     <div class="agg-header uppercase text-slate-600 pb-2 text-sm">Price</div>
     {% if "filter.name=regularPrice" not in applied_filters %}
       {% for agg in search_response.aggregations.regularPrice.buckets  %}
-        {% if agg.doc_count > 1 %}
+        {% if agg.doc_count > 0 %}
           <div class="aggregation">
             <div><a
                 class="text-blue-500 flex"
@@ -28,7 +28,7 @@
     <div class="agg-header uppercase text-slate-600 pt-8 pb-2 text-sm">Department</div>
     {% if "filter.name=department" not in applied_filters %}
       {% for agg in search_response.aggregations.department.buckets | sort(attribute='doc_count', reverse = True)  %}
-        {% if agg.doc_count > 1 %}
+        {% if agg.doc_count > 0 %}
           <div class="aggregation">
             <div><a class="text-blue-500 flex"
                 href="{{ url_for("search.query") }}?&query={{ query|e }}{{ applied_filters }}&filter.name=department.keyword&department.keyword.type=terms&department.keyword.key={{ agg.key }}">

@@ -118,8 +118,10 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         'size': 10,
         'query': {
             'query_string': {'query': user_query,
-                             "default_operator": "OR",
-                             'fields': ["name^100", "shortDescription^50", "longDescription^10", "department"],
+                             'fields': ["name^1000", "shortDescription^50", "longDescription^10", "department"],
+                             "default_operator": "AND",
+                             "minimum_should_match": "2"
+
                              },
 
         },
