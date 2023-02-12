@@ -30,11 +30,11 @@ def process_filters(filters_input):
             print("from: {}, to: {}".format(from_val, to_val))
             # we need to turn the "to-from" syntax of aggregations to the "gte,lte" syntax of range filters.
             to_from = {}
-            if from_val:
+            if from_val and from_val != "*":
                 to_from["gte"] = from_val
             else:
                 from_val = "*"  # set it to * for display purposes, but don't use it in the query
-            if to_val:
+            if to_val and to_val != "*":
                 to_from["lt"] = to_val
             else:
                 to_val = "*"  # set it to * for display purposes, but don't use it in the query
