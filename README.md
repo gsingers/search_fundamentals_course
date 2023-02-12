@@ -79,14 +79,25 @@ To run locally, you will need a few things:
 2. [Docker](https://docker.com/)
 3. A [Git](https://git-scm.com/) client
 
-Note: these have only been tested on a Mac running OS 12.2.1.  YMMV.  Much of what you will need to do will be similar to what's in `.gitpod.Dockerfile`
-
-1. `pyenv install 3.9.7`
-2. `pip install` all of the libraries you see in `.gitpod.Dockerfile`
-3. Setup your weekly python environments per the "Weekly Project" above.
-4. Run OpenSearch: 
+Note: these have only been tested on a Mac running OS(Ventura) 13.1.
+1. Run OpenSearch: 
     A. `cd docker`
     B. `docker-compose up`
-5. Note: most of the scripts and projects assume the data is in `/workspace/datasets`, but have overrides to specify your own directories. You will need to download and plan accordingly.  
-6. Do your work per the Weekly Project     
+    * Once OpenSearch is up and running use the URL `http://localhost:5601` to login to the local Dashboards UI.
+        ![DashBoard](search-dashboard.png)
+    * use the default credential admin/admin to login to the dashboard.
+2. Install Packaging Tool [Pipenv](https://realpython.com/pipenv-guide/) `pip install pipenv`
+3. cd inside the project folder
+4. Create a virtual environment using `pipenv install --python 3.9.7`
+5. Install dependencies `pipenv install -r requirements.txt`
+6. Download the DataSet files from Kaggle [Data Mining](https://www.kaggle.com/competitions/acm-sf-chapter-hackathon-big/data)
+7. Copy the files `popular_skus.py  product_data  test.csv  train.csv` inside `workspace/datasets` folder.
+8. Create Query Index `bbuy_queries` using the mappings provided in `opensearch/bbuy_queries.json` file either using OpenSearch DevTools or OpenSearch Python Client.
+9. Create Query Index `bbuy_products` using the mappings provided in `opensearch/bbuy_products.json` file either using OpenSearch DevTools or OpenSearch Python Client.
+10. To index the product data run the command `python week1/index_products.py --source_dir workspace/datasets/product_data/products`
+11. To index user queries run the command `python week1/index_queries.py --source_file workspace/datasets/train.csv`
+12. Verify data is Indexed successfully run some sample commands from OpenSearch DevTools `GET bbuy_queries/_count` and `GET bbuy_products/_count`
+13. To start the Flask application run the command `make week1` or `make week2`
+14. Note: most of the scripts and projects assume the data is in `/workspace/datasets`, but have overrides to specify your own directories. You will need to download and plan accordingly.  
+15. Do your work per the Weekly Project
     
