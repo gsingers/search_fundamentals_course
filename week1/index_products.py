@@ -81,22 +81,6 @@ mappings =  [
 
         ]
 
-# def get_opensearch():
-#     host = 'localhost'
-#     port = 9200
-#     auth = ('admin', 'admin')
-#     #### Step 2.a: Create a connection to OpenSearch
-#     client = OpenSearch(
-#         hosts=[{'host': host, 'port': port}], 
-#         http_auth=auth,
-#         use_ssl=True,
-#         verify_certs=False,
-#         ssl_assert_hostname=False,
-#         ssl_show_warn=False,)
-#     return client
-
-import pdb
-
 
 def index_file(file, index_name):
     docs_indexed = 0
@@ -112,7 +96,6 @@ def index_file(file, index_name):
         doc = {}
         
         for idx in range(0, len(mappings), 2):
-            # pdb.set_trace()
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             value = child.xpath(xpath_expr)
