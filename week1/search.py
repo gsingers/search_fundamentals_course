@@ -90,7 +90,7 @@ def query():
         query_obj = create_query(user_query, filters, sort, sortDir)
     else:
         query_obj = create_query("*", [], sort, sortDir)
-
+    print(user_query)
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
@@ -110,18 +110,30 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
         "size": 10,
+        "_source": ["productId", "name", "shortDescription", "longDescription", "department", "salesRankShortTerm","salesRankMediumTerm", "salesRankLongTerm", "regularPrice", "categoryPath", "image"],
         "query": {
             "bool": {
                 "must": {
                     "query_string": {
-                    "query": user_query,
-                    "fields": ["name", "shortDescription", "longDescription"],
-                    "phrase_slop": 3,
+                        "query": user_query,
+                        "fields": ["name^1000", "shortDescription^50", "longDescription^50", 'department'],
+                        "phrase_slop": 3,
                     },
                 },
                 "filter": filters,
             }
         },
+        "highlight": {
+                "fields": {
+                    "name": {},
+                    "shortDescription": {},
+                    "longDescription": {},
+                }
+        },
+        # "sort": [
+        #     {"name.keyword": "asc"},
+        #     {"regularPrice": "asc"}
+        # ],
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
             "regularPrice": {
@@ -137,6 +149,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                     ]
                 }
             },
+            "missing_images": {"missing": {"field": "image"}},
             "department": {
                 "terms": {
                     "field": "department"

@@ -33,7 +33,7 @@
       "frequentlyPurchasedWith": {"type": "keyword"},
       "height": {"type": "keyword"},
       "homeDelivery": {"type": "boolean"},
-      "image": {"type": "text"},
+      "image": {"type": "keyword"},
       "inStoreAvailability": {"type": "boolean"},
       "inStorePickup": {"type": "boolean"},
       "longDescription": {
