@@ -2,7 +2,7 @@
 # The main search hooks for the Search Flask application.
 #
 from flask import (
-    Blueprint, redirect, render_template, request, url_for
+    Blueprint, redirect, render_template, request, url_for, g
 )
 
 from week1.opensearch import get_opensearch
@@ -58,7 +58,10 @@ def process_filters(filters_input):
 # Our main query route.  Accepts POST (via the Search box) and GETs via the clicks on aggregations/facets
 @bp.route('/query', methods=['GET', 'POST'])
 def query():
-    opensearch = get_opensearch() # Load up our OpenSearch client from the opensearch.py file.
+    if 'opensearch' not in g:
+        g.opensearch = get_opensearch()    
+
+    opensearch = g.opensearch # Load up our OpenSearch client from the opensearch.py file.
     # Put in your code to query opensearch.  Set error as appropriate.
     error = None
     user_query = None
