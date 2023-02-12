@@ -109,72 +109,122 @@ def query():
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
-        "size": 10,
-        "_source": ["productId", "name", "shortDescription", "longDescription", "department", "salesRankShortTerm","salesRankMediumTerm", "salesRankLongTerm", "regularPrice", "categoryPath", "image"],
+    "size": 10,
+    "_source": [
+        "productId",
+        "name",
+        "shortDescription",
+        "longDescription",
+        "department",
+        "salesRankShortTerm",
+        "salesRankMediumTerm",
+        "salesRankLongTerm",
+        "regularPrice",
+        "categoryPath",
+        "image"
+    ],
+    "query": {
+        "function_score": {
         "query": {
-            "function_score": {
-                "query": {
-                    "query_string": {
-                        "query": user_query,
-                        "fields": ["name^1000", "shortDescription^50", "longDescription^10", "department"]
-                        }
-                },
-                "boost_mode": "replace",
-                "score_mode": "avg",
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "salesRankShortTerm",
-                            "missing": 100000000,
-                            "modifier": "reciprocal"
-                        }
-                    },
-                    {
-                        "field_value_factor": {
-                            "field": "salesRankMediumTerm",
-                            "missing": 100000000,
-                            "modifier": "reciprocal"
-                        }
-                    },
-                    {
-                        "field_value_factor": {
-                            "field": "salesRankLongTerm",
-                            "missing": 100000000,
-                            "modifier": "reciprocal"
-                        }
-                    }
-                ]
-            }
-        },
-        "highlight": {
-                "fields": {
-                    "name": {},
-                    "shortDescription": {},
-                    "longDescription": {},
-                }
-        },
-        "aggs": {
-            #### Step 4.b.i: create the appropriate query and aggregations here
-            "regularPrice": {
-                "range": {
-                    "field": "regularPrice",
-                    "ranges": [
-                        {"from": 0, "to": 100, "key": "$"},
-                        {"from": 100, "to": 200, "key": "$$"},
-                        {"from": 200, "to": 300, "key": "$$$"},
-                        {"from": 300, "to": 400, "key": "$$$$"},
-                        {"from": 400, "to": 500, "key": "$$$$$"},
-                        {"from": 500, "key": "$$$$$$"}
+            "bool": {
+            "must": [
+                {
+                "query_string": {
+                    "query": user_query,
+                    "fields": [
+                    "name^1000",
+                    "shortDescription^50",
+                    "longDescription^10",
+                    "department"
                     ]
                 }
-            },
-            "missing_images": {"missing": {"field": "image"}},
-            "department": {
-                "terms": {
-                    "field": "department.keyword"
-                    }
+                }
+            ],
+            "filter": filters
             }
+        },
+        "boost_mode": "replace",
+        "score_mode": "avg",
+        "functions": [
+            {
+            "field_value_factor": {
+                "field": "salesRankShortTerm",
+                "missing": 100000000,
+                "modifier": "reciprocal"
+            }
+            },
+            {
+            "field_value_factor": {
+                "field": "salesRankMediumTerm",
+                "missing": 100000000,
+                "modifier": "reciprocal"
+            }
+            },
+            {
+            "field_value_factor": {
+                "field": "salesRankLongTerm",
+                "missing": 100000000,
+                "modifier": "reciprocal"
+            }
+            }
+        ]
         }
+    },
+    "highlight": {
+        "fields": {
+        "name": {},
+        "shortDescription": {},
+        "longDescription": {}
+        }
+    },
+    "aggs": {
+        "regularPrice": {
+        "range": {
+            "field": "regularPrice",
+            "ranges": [
+            {
+                "from": 0,
+                "to": 100,
+                "key": "$"
+            },
+            {
+                "from": 100,
+                "to": 200,
+                "key": "$$"
+            },
+            {
+                "from": 200,
+                "to": 300,
+                "key": "$$$"
+            },
+            {
+                "from": 300,
+                "to": 400,
+                "key": "$$$$"
+            },
+            {
+                "from": 400,
+                "to": 500,
+                "key": "$$$$$"
+            },
+            {
+                "from": 500,
+                "key": "$$$$$$"
+            }
+            ]
+        }
+        },
+        "missing_images": {
+        "missing": {
+            "field": "image"
+        }
+        },
+        "department": {
+        "terms": {
+            "field": "department.keyword"
+        }
+        }
+    }
     }
     print(query_obj)
     return query_obj
