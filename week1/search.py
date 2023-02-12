@@ -111,11 +111,54 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
-        },
+            "match_all": {}
+        }
+        "highlight": {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            }
+        }
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
+            "department":{
+                "terms": {
+                    "field": "department.keyword",
+                    "size": 100
+                }
+            },
+            "missing_images":{
+                "missing": {
+                    "field": "image.keyword"
+                }
+            }
+        },
+        "sort":{
+            [
+                {
+                    sort: {
+                        "order": sortDir
+                    }
+                }
+            ]
         }
     }
+
+    if user_query:
+        query_obj["query"] = {
+            "query_string": {
+                "fields": ["name^4", "shortDescription", "longDescription"],
+                "query": user_query,
+                "phrase_slop": 3
+            }
+        }
+        query_obj["highlight"] = {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            }
+        }
+
     return query_obj
