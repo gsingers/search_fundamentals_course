@@ -75,6 +75,7 @@
       "modelNumber": {"type": "keyword",  "ignore_above": 256},
       "name": {
         "type": "text",
+        "analyzer": "english",
         "fields": {
           "keyword": {
             "type": "keyword",
