@@ -159,3 +159,44 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     }
     print(query_obj)
     return query_obj
+
+
+# {
+#  "size": 10,
+#   "query": {
+#       "function_score": {
+#         "query": {
+#            "query_string": {
+#               "query": "\"ipad 2\"",
+#               "fields": ["name^1000", "shortDescription^50", "longDescription^10", "department"]
+#             }
+#         },
+#         "boost_mode": "multiply",
+#         "score_mode": "avg",
+#         "functions": [
+#           {
+#             "field_value_factor": {
+#               "field": "salesRankShortTerm",
+#               "missing": 100000000,
+#               "modifier": "reciprocal"
+#             }
+#           },
+#           {
+#             "field_value_factor": {
+#               "field": "salesRankMediumTerm",
+#               "missing": 100000000,
+#               "modifier": "reciprocal"
+#             }
+#         },
+#           {
+#             "field_value_factor": {
+#               "field": "salesRankLongTerm",
+#               "missing": 100000000,
+#               "modifier": "reciprocal"
+#             }
+#         }
+#         ]
+#       }
+#   },
+#   "_source": ["productId", "name", "shortDescription", "longDescription", "department", "salesRankShortTerm",  "salesRankMediumTerm", "salesRankLongTerm", "regularPrice"]
+# }
