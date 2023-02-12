@@ -75,7 +75,7 @@ At the command line, do the following steps to run the example.
 
 To run locally, you will need a few things:
 
-1. [Pyenv](https://github.com/pyenv/pyenv) and [Pyenv-Virtualenv](https://github.com/pyenv/pyenv-virtualenv) with Python 3.9.7 installed
+1. [Pipenv](https://realpython.com/pipenv-guide/) with Python 3.9.7 installed
 2. [Docker](https://docker.com/)
 3. A [Git](https://git-scm.com/) client
 
