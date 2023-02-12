@@ -117,7 +117,7 @@ def index_file(file, index_name):
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
         the_doc = {
-            "id": doc['productId'][0],
+            "id": doc['sku'][0],
             "_index": index_name
         }
 
@@ -138,7 +138,19 @@ def index_file(file, index_name):
             except BulkIndexError as e:
                 logger.error(e)
                 docs_indexed += l - len(e.errors)
-    
+            docs = []
+
+    # remaining docs
+    l = len(docs)
+    if l > 0:
+        try:
+            resp = bulk(client, docs)
+            docs_indexed += resp[0]
+        except BulkIndexError as e:
+            logger.error(e)
+            docs_indexed += l - len(e.errors)
+        docs = []
+            
     return docs_indexed
 
 @click.command()
