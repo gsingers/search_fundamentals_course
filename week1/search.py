@@ -152,7 +152,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             "missing_images": {"missing": {"field": "image"}},
             "department": {
                 "terms": {
-                    "field": "department"
+                    "field": "department.keyword"
                     }
             }
         }
