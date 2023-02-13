@@ -72,9 +72,9 @@ mappings = {
     "weight": "weight/text()",
     "shippingWeight": "shippingWeight/text()",
     "width": "width/text()",
-    # "longDescription": "longDescription/text()",
-    # "longDescriptionHtml": "longDescriptionHtml/text()",
-    # "features": "features/*/text()",
+    "longDescription": "longDescription/text()",
+    "longDescriptionHtml": "longDescriptionHtml/text()",
+    "features": "features/*/text()",
 }
 
 def get_opensearch():
