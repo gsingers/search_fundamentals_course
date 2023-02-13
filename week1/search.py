@@ -1,3 +1,5 @@
+import json
+
 #
 # The main search hooks for the Search Flask application.
 #
@@ -91,10 +93,10 @@ def query():
     else:
         query_obj = create_query("*", [], sort, sortDir)
 
-    print("query obj: {}".format(query_obj))
+    print("query obj: \n{}".format(json.dumps(query_obj))) # tip from David
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(body=query_obj, index="bbuy_products")
     # Postprocess results here if you so desire
 
     #print(response)
@@ -109,13 +111,110 @@ def query():
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
-        'size': 10,
+        "size": 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "query_string": {
+                                    "query": user_query,
+                                    "fields": ["name^100", "shortDescription^50", "longDescription^10", "department^1.5", "manufacturer^1.5", "categoryPath"],
+                                    "phrase_slop": 3
+                                }
+                            }
+                        ],
+                        "filter": filters
+                    }
+                },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                {
+                    "field_value_factor": {
+                    "field": "salesRankLongTerm",
+                    "modifier": "reciprocal",
+                    "missing": 100000000
+                    }
+                },
+                {
+                    "field_value_factor": {
+                    "field": "salesRankMediumTerm",
+                    "modifier": "reciprocal",
+                    "missing": 100000000
+                    }
+                },
+                {
+                    "field_value_factor": {
+                    "field": "salesRankShortTerm",
+                    "modifier": "reciprocal",
+                    "missing": 100000000
+                    }
+                }
+                ]
+            }
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
-        }
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "to": 5,
+                            "key": "$0-$5"
+                        },
+                        {
+                            "from": 5,
+                            "to": 20,
+                            "key": "$5-$20"
+                        },
+                        {
+                            "from": 20,
+                            "to": 50,
+                            "key": "$20-$50"
+                        },
+                        {
+                            "from": 50,
+                            "to": 100,
+                            "key": "$50-$100"
+                        },
+                        {
+                            "from": 100,
+                            "to": 250,
+                            "key": "$100-$250"
+                        },
+                        {
+                            "from": 250,
+                            "key": "$250+"
+                        }
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department.keyword",
+                    "size": 10,
+                    "min_doc_count": 0
+                }
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "image"
+                }
+            }
+        },
+        "highlight": {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {},
+                "department": {}
+            }
+        },
+        "sort": [
+            {sort: sortDir}
+        ]
     }
     return query_obj
