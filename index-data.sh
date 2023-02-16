@@ -1,3 +1,12 @@
+#!/bin/bash -e
+
+if [ -f ".env" ]
+then
+  export $(grep -v '^#' .env | xargs)
+  ES_CREDS=$ES_USER:$ES_PASS
+else
+  ES_CREDS=admin:admin
+fi
 usage()
 {
   echo "Usage: $0 [-y /path/to/python/indexing/code] [-d /path/to/kaggle/best/buy/datasets] [-p /path/to/bbuy/products/field/mappings] [ -q /path/to/bbuy/queries/field/mappings ] [ -g /path/to/write/logs/to ]"
@@ -26,18 +35,21 @@ do
 done
 shift $((OPTIND -1))
 
-mkdir $LOGS_DIR
+mkdir -p $LOGS_DIR
+
+echo "PRODUCTS_JSON_FILE=$PRODUCTS_JSON_FILE"
+echo "QUERIES_JSON_FILE=$QUERIES_JSON_FILE"
 
 echo "Creating index settings and mappings"
 echo " Product file: $PRODUCTS_JSON_FILE"
-curl -k -X PUT -u admin  "https://localhost:9200/bbuy_products" -H 'Content-Type: application/json' -d "@$PRODUCTS_JSON_FILE"
+curl -k -X PUT -u "$ES_CREDS" "https://localhost:9200/bbuy_products" -H 'Content-Type: application/json' -d "@$PRODUCTS_JSON_FILE"
 if [ $? -ne 0 ] ; then
   echo "Failed to create index with settings of $PRODUCTS_JSON_FILE"
   exit 2
 fi
 echo ""
 echo " Query file: $QUERIES_JSON_FILE"
-curl -k -X PUT -u admin  "https://localhost:9200/bbuy_queries" -H 'Content-Type: application/json' -d "@$QUERIES_JSON_FILE"
+curl -k -X PUT -u "$ES_CREDS" "https://localhost:9200/bbuy_queries" -H 'Content-Type: application/json' -d "@$QUERIES_JSON_FILE"
 if [ $? -ne 0 ] ; then
   echo "Failed to create index with settings of $QUERIES_JSON_FILE"
   exit 2
@@ -52,7 +64,7 @@ if [ -f index_products.py ]; then
     echo "Failed to index products"
     exit 2
   fi
-fi 
+fi
 if [ -f index_queries.py ]; then
   echo "Indexing queries data and writing logs to $LOGS_DIR/index_queries.log"
   nohup python index_queries.py -s "$DATASETS_DIR/train.csv" > "$LOGS_DIR/index_queries.log" &
