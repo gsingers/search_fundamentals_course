@@ -26,7 +26,7 @@
   </div>
   <div class="aggregations-result">
     <div class="agg-header uppercase text-slate-600 pt-8 pb-2 text-sm">Department</div>
-    {% if "filter.name=department" not in applied_filters %}
+    {% if "filter.name=department" not in applied_filters and "department" in search_response.aggregations  %}
       {% for agg in search_response.aggregations.department.buckets | sort(attribute='doc_count', reverse = True)  %}
         {% if agg.doc_count > 1 %}
           <div class="aggregation">

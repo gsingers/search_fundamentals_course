@@ -1,0 +1,318 @@
+accessories:
+  type: text
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: accessories/*/text()
+
+active:
+  type: boolean
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: active/text()
+
+artistName:
+  type: text
+  analyzer: "english"
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: artistName/text()
+
+bestBuyItemId:
+  type: integer
+  xml_field: bestBuyItemId/text()
+
+bestSellingRank:
+  type: rank_feature
+  positive_score_impact: false
+  xml_field: bestSellingRank/text()
+
+categoryLeaf:
+  type: text
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: categoryPath/category[last()]/id/text()
+
+categoryPath:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: categoryPath/*/name/text()
+
+categoryPathCount:
+  type: integer
+  xml_field: count(categoryPath/*/name)
+
+categoryPathIds:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: categoryPath/*/id/text()
+
+class:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: class/text()
+
+classId:
+  type: integer
+  xml_field: classId/text()
+
+color:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: color/text()
+
+condition:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: condition/text()
+
+crossSell:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: crossSell/text()
+
+customerReviewAverage:
+  type: float
+  xml_field: customerReviewAverage/text()
+
+customerReviewCount:
+  type: integer
+  xml_field: customerReviewCount/text()
+
+department:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: department/text()
+
+departmentId:
+  type: integer
+  xml_field: departmentId/text()
+
+# depth could be parsed to number
+depth:
+  type: keyword
+  xml_field: depth/text()
+
+# seems to be sparse
+description:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: description/text()
+
+
+digital:
+  type: boolean
+  xml_field: digital/text()
+
+features:
+  type: text
+  analyzer: "english"
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: features/*/text()
+
+# this is a list of skus
+frequentlyPurchasedWith:
+  type: long
+  xml_field: frequentlyPurchasedWith/*/text()
+
+height:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: height/text()
+
+
+homeDelivery:
+  type: boolean
+  xml_field: homeDelivery/text()
+
+image:
+  type: keyword
+  xml_field: image/text()
+
+
+inStoreAvailability:
+  type: boolean
+  xml_field: inStoreAvailability/text()
+
+inStorePickup:
+  type: boolean
+  xml_field: inStorePickup/text()
+
+longDescription:
+  type: text
+  analyzer: "english"
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: longDescription/text()
+
+longDescriptionHtml:
+  type: text
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: longDescriptionHtml/text()
+
+manufacturer:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: manufacturer/text()
+
+modelNumber:
+  type: keyword
+  xml_field: modelNumber/text()
+
+name:
+  type: text
+  analyzer: "english"
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: name/text()
+
+onSale:
+  type: boolean
+  xml_field: onSale/text()
+
+onlineAvailability:
+  type: boolean
+  xml_field: onlineAvailability/text()
+
+# I wanted to use this field as _id, but the number of products in the index decrease
+# Some tests show that the products are almost identical but not completely (eg. dvd / blue-ray)
+productId:
+  type: long
+  xml_field: productId/text()
+
+quantityLimit:
+  type: integer
+  xml_field: quantityLimit/text()
+
+regularPrice:
+  type: float
+  xml_field: regularPrice/text()
+
+relatedProducts:
+  type: integer
+  xml_field: relatedProducts/*/text()
+
+releaseDate:
+  type: date
+  xml_field: releaseDate/text()
+
+salePrice:
+  type: float
+  xml_field: salePrice/text()
+
+salesRankLongTerm:
+  type: integer
+  xml_field: salesRankLongTerm/text()
+
+salesRankMediumTerm:
+  type: integer
+  xml_field: salesRankMediumTerm/text()
+
+salesRankShortTerm:
+  type: integer
+  xml_field: salesRankShortTerm/text()
+
+shippingCost:
+  type: float
+  xml_field: shippingCost/text()
+
+shippingWeight:
+  type: float
+  xml_field: shippingWeight/text()
+
+shortDescription:
+  analyzer: "english"
+  type: text
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  xml_field: shortDescription/text()
+
+shortDescriptionHtml:
+  fields:
+    keyword:
+      ignore_above: 256
+      type: keyword
+  type: text
+  xml_field: shortDescriptionHtml/text()
+
+sku:
+  type: long
+  xml_field: sku/text()
+
+startDate:
+  type: date
+  xml_field: startDate/text()
+
+subclass:
+  type: keyword
+  xml_field: subclass/text()
+
+subclassId:
+  type: integer
+  xml_field: subclassId/text()
+
+type:
+  type: keyword
+  xml_field: type/text()
+
+url:
+  type: keyword
+  xml_field: url/text()
+
+# not always float since some fields contain units. how to parse?
+weight:
+  type: keyword
+  xml_field: weight/text()
+
+width:
+  type: keyword
+  xml_field: width/text()
