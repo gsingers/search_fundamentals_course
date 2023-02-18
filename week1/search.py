@@ -1,6 +1,8 @@
 #
 # The main search hooks for the Search Flask application.
 #
+import json
+
 from flask import (
     Blueprint, redirect, render_template, request, url_for
 )
@@ -90,7 +92,7 @@ def query():
     else:
         query_obj = create_query("*", [], sort, sortDir)
 
-    print(query_obj)
+    print("query obj: \n{}".format(json.dumps(query_obj)))
 
     #### Step 4.b.ii
     response = opensearch.search(query_obj, "bbuy_products")
