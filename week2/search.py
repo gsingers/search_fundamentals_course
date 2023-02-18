@@ -1,6 +1,8 @@
 #
 # The main search hooks for the Search Flask application.
 #
+import json
+
 from flask import (
     Blueprint, redirect, render_template, request, url_for, current_app
 )
@@ -108,7 +110,7 @@ def query():
         ##### W2, L1, S2
 
         ##### W2, L2, S2
-        print("Plain ol q: %s" % query_obj)
+        print("Plain ol q: %s" % json.dumps(query_obj))
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
         filters_input = request.args.getlist("filter.name")
