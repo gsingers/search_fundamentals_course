@@ -11,7 +11,6 @@ import week2.utilities.query_utils as qu
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
-
 # Process the filters requested by the user and return a tuple that is appropriate for use in: the query, URLs displaying the filter and the display of the applied filters
 # filters -- convert the URL GET structure into an OpenSearch filter query
 # display_filters -- return an array of filters that are applied that is appropriate for display
@@ -57,15 +56,32 @@ def process_filters(filters_input):
 
 @bp.route('/autocomplete', methods=['GET'])
 def autocomplete():
+    opensearch = get_opensearch()
     results = {}
     if request.method == 'GET':  # a query has been submitted
         prefix = request.args.get("prefix")
         print(f"Prefix: {prefix}")
         if prefix is not None:
             type = request.args.get("type", "queries") # If type == queries, this is an autocomplete request, else if products, it's an instant search request.
+            if type == "queries":
+                use_index = "bbuy_queries"
+            else:
+                use_index = "bbuy_products"
             ##### W2, L3, S1
-            search_response = None
-            print("TODO: implement autocomplete AND instant search")
+            suggester_query_obj = {
+                    "suggest": {
+                        "autocomplete": {
+                            "prefix": prefix,
+                            "completion": {
+                                "field": "suggest",
+                                "skip_duplicates": True
+                            }
+                        }
+                    }
+                }
+            
+            search_response = opensearch.search(body=suggester_query_obj, index=use_index, explain=False)
+
             if (search_response and search_response['suggest']['autocomplete'] and search_response['suggest']['autocomplete'][0]['length'] > 0): # just a query response
                 results = search_response['suggest']['autocomplete'][0]['options']
     print(f"Results: {results}")
@@ -106,8 +122,9 @@ def query():
 
         query_obj = qu.create_query(user_query,  [], sort, sortDir, size=20)  # We moved create_query to a utility class so we could use it elsewhere.
         ##### W2, L1, S2
-
+        # I believe this was optional.
         ##### W2, L2, S2
+        query_obj = qu.add_spelling_suggestions(query_obj, user_query)
         print("Plain ol q: %s" % query_obj)
     elif request.method == 'GET':  # Handle the case where there is no query or just loading the page
         user_query = request.args.get("query", "*")
@@ -123,12 +140,12 @@ def query():
         #### W2, L1, S2
 
         ##### W2, L2, S2
-
+        query_obj = qu.add_spelling_suggestions(query_obj, user_query)
     else:
         query_obj = qu.create_query("*", "", [], sort, sortDir, size=100)
 
     #print("query obj: {}".format(query_obj))
-    response = opensearch.search(body=query_obj, index="bbuy_products", explain=explain)
+    response = opensearch.search(body=query_obj, index="bbuy_products", explain=False)
     # Postprocess results here if you so desire
 
     #print(response)

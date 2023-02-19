@@ -10,10 +10,13 @@
           ]
         },
         "trigram": {
-            "type": "custom",
-            "tokenizer": "standard",
-            "filter": ["lowercase","shingle"]
-          }
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "shingle"
+          ]
+        }
       },
       "tokenizer": {
         "smarter_hyphens_tokenizer": {
@@ -26,11 +29,15 @@
       },
       "filter": {
         "smarter_hyphens_filter": {
-          "TODO": "DEFINE ME"
+          "type": "word_delimiter_graph",
+          "catenate_all": true,
+          "catenate_words": true
         },
         "shingle": {
-            "TODO": "DEFINE ME"
-          }
+          "type": "shingle",
+          "min_shingle_size": 2,
+          "max_shingle_size": 3
+        }
       }
     }
   },
@@ -247,11 +254,25 @@
           "keyword": {
             "type": "keyword",
             "ignore_above": 2048
+          },
+          "hyphens": {
+            "type": "text",
+            "analyzer": "smarter_hyphens"
           }
         }
       },
-      "TODO: REPLACE WITH SUGGEST": {
-        "REPLACE": "REPLACE"
+      "suggest": {
+        "type": "completion",
+        "fields": {
+          "trigrams": {
+            "type": "text",
+            "analyzer": "trigram"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "english"
+          }
+        }
       },
       "canonical": {
         "type": "text"
