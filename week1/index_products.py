@@ -17,8 +17,8 @@ logger.setLevel(logging.INFO)
 logging.basicConfig(format='%(levelname)s:%(message)s')
 
 # NOTE: this is not a complete list of fields.  If you wish to add more, put in the appropriate XPath expression.
-# TODO: is there a way to do this using XPath/XSL Functions so that we don't have to maintain a big list?
-mappings = [
+#TODO: is there a way to do this using XPath/XSL Functions so that we don't have to maintain a big list?
+mappings =  [
     "productId/text()", "productId",
     "sku/text()", "sku",
     "name/text()", "name",
@@ -30,17 +30,17 @@ mappings = [
     "artistName/text()", "artistName",
     "onSale/text()", "onSale",
     "digital/text()", "digital",
-    "frequentlyPurchasedWith/*/text()", "frequentlyPurchasedWith",  # Note the match all here to get the subfields
-    "accessories/*/text()", "accessories",  # Note the match all here to get the subfields
-    "relatedProducts/*/text()", "relatedProducts",  # Note the match all here to get the subfields
+    "frequentlyPurchasedWith/*/text()", "frequentlyPurchasedWith",# Note the match all here to get the subfields
+    "accessories/*/text()", "accessories",# Note the match all here to get the subfields
+    "relatedProducts/*/text()", "relatedProducts",# Note the match all here to get the subfields
     "crossSell/text()", "crossSell",
     "salesRankShortTerm/text()", "salesRankShortTerm",
     "salesRankMediumTerm/text()", "salesRankMediumTerm",
     "salesRankLongTerm/text()", "salesRankLongTerm",
     "bestSellingRank/text()", "bestSellingRank",
     "url/text()", "url",
-    "categoryPath/*/name/text()", "categoryPath",  # Note the match all here to get the subfields
-    "categoryPath/*/id/text()", "categoryPathIds",  # Note the match all here to get the subfields
+    "categoryPath/*/name/text()", "categoryPath", # Note the match all here to get the subfields
+    "categoryPath/*/id/text()", "categoryPathIds", # Note the match all here to get the subfields
     "categoryPath/category[last()]/id/text()", "categoryLeaf",
     "count(categoryPath/*/name)", "categoryPathCount",
     "customerReviewCount/text()", "customerReviewCount",
@@ -74,7 +74,7 @@ mappings = [
     "width/text()", "width",
     "longDescription/text()", "longDescription",
     "longDescriptionHtml/text()", "longDescriptionHtml",
-    "features/*/text()", "features"  # Note the match all here to get the subfields
+    "features/*/text()", "features" # Note the match all here to get the subfields
 
 ]
 
@@ -84,25 +84,14 @@ def get_opensearch():
     port = 9200
     auth = ('admin', 'admin')
     #### Step 2.a: Create a connection to OpenSearch
-    client = OpenSearch(
-        hosts=[{'host': host, 'port': port}],
-        http_compress=True,  # enables gzip compression for request bodies
-        http_auth=auth,
-        # client_cert = client_cert_path,
-        # client_key = client_key_path,
-        use_ssl=True,
-        verify_certs=False,
-        ssl_assert_hostname=False,
-        ssl_show_warn=False,
-    )
-    return client
+    client = None
 
 
 def index_file(file, index_name):
     docs_indexed = 0
     client = get_opensearch()
-    logger.info(client.cat.health())
-    logger.info(client.cat.indices())
+
+
     logger.info(f'Processing file : {file}')
     tree = etree.parse(file)
     root = tree.getroot()
