@@ -1,8 +1,6 @@
 #
 # The main search hooks for the Search Flask application.
 #
-import json
-
 from flask import (
     Blueprint, redirect, render_template, request, url_for
 )
@@ -56,11 +54,12 @@ def process_filters(filters_input):
     return filters, display_filters, applied_filters
 
 
+
 # Our main query route.  Accepts POST (via the Search box) and GETs via the clicks on aggregations/facets
 @bp.route('/query', methods=['GET', 'POST'])
 def query():
-    opensearch = get_opensearch()  # Load up our OpenSearch client from the opensearch.py file.
-    # Code to query opensearch.  Set error as appropriate.
+    opensearch = get_opensearch() # Load up our OpenSearch client from the opensearch.py file.
+    # Put in your code to query opensearch.  Set error as appropriate.
     error = None
     user_query = None
     query_obj = None
@@ -95,13 +94,10 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = opensearch.search(
-        body=query_obj,
-        index='bbuy_products'
-    )
+    response = None   # TODO: Replace me with an appropriate call to OpenSearch
     # Postprocess results here if you so desire
 
-    # print(response)
+    #print(response)
     if error is None:
         return render_template("search_results.jinja2", query=user_query, search_response=response,
                                display_filters=display_filters, applied_filters=applied_filters,
@@ -111,80 +107,15 @@ def query():
 
 
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
-    input_filters = None
-    input_filters if filters else 0
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
     query_obj = {
         'size': 10,
-        'query': {
-            'query_string': {'query': user_query,
-                             'fields': ["name^1000", "shortDescription^50", "longDescription^10", "department"],
-                             "default_operator": "AND",
-                             "minimum_should_match": "2"
+        "query": {
+            "match_all": {} # Replace me with a query that both searches and filters
+        },
+        "aggs": {
+            #### Step 4.b.i: create the appropriate query and aggregations here
 
-                             },
-
-        },
-        "highlight": {
-            "fields": {
-                "name": {},
-                "shortDescription": {}
-            }
-        },
-        'aggs': {
-            "department": {
-                "terms": {
-                    "field": "department",
-                    "size": 10,
-                    "missing": "N/A",
-                    "min_doc_count": 0
-                }
-            },
-            "regularPrice": {
-                "range": {
-                    "field": "regularPrice",
-                    "ranges": [
-                        {
-                            "key": "$",
-                            "to": 5000
-                        },
-                        {
-                            "key": "$$",
-                            "from": 5000,
-                            "to": 10000
-                        },
-                        {
-                            "key": "$$$",
-                            "from": 10000,
-                            "to": 20000
-                        },
-                        {
-                            "key": "$$$",
-                            "from": 20000,
-                            "to": 50000
-                        },
-                        {
-                            "key": "$$$$",
-                            "from": 50000,
-                            "to": 100000
-                        },
-                        {
-                            "key": "$$$$$",
-                            "from": 100000,
-                        }
-                    ]
-                }
-            },
-            "missing_images": {
-                "missing": {"field": "image"}
-            }
-        },
-        "sort": [
-            {
-                sort: {
-                    "order": sortDir
-                }
-            }
-        ]
+        }
     }
     return query_obj

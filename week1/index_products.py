@@ -12,6 +12,8 @@ import logging
 from time import perf_counter
 import concurrent.futures
 
+
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logging.basicConfig(format='%(levelname)s:%(message)s')
@@ -78,67 +80,54 @@ mappings =  [
 
 ]
 
-
 def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
     #### Step 2.a: Create a connection to OpenSearch
     client = None
+    return client
 
 
 def index_file(file, index_name):
     docs_indexed = 0
     client = get_opensearch()
-
-
     logger.info(f'Processing file : {file}')
     tree = etree.parse(file)
     root = tree.getroot()
     children = root.findall("./product")
     docs = []
-    batch_size = 500
     for child in children:
         doc = {}
         for idx in range(0, len(mappings), 2):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        # print(doc)
+        #print(doc)
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = {'_index': index_name, '_id': doc['sku'][0], '_source': doc}
+        the_doc = None
         docs.append(the_doc)
-        docs_indexed += 1
-        if docs_indexed % batch_size == 0:
-            bulk(client, docs, request_timeout=120)
-            logger.info(f'{docs_indexed} documents indexed')
-            docs = []
-    if len(docs) > 0:
-        bulk(client, docs, request_timeout=60)
-        logger.info(f'{docs_indexed} documents indexed')
-    return docs_indexed
 
+    return docs_indexed
 
 @click.command()
 @click.option('--source_dir', '-s', help='XML files source directory')
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
-    print(f'Source directory path {source_dir}')
+
     files = glob.glob(source_dir + "/*.xml")
     docs_indexed = 0
     start = perf_counter()
-    print(f'Number of files {len(files)}')
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [executor.submit(index_file, file, index_name) for file in files]
         for future in concurrent.futures.as_completed(futures):
             docs_indexed += future.result()
 
     finish = perf_counter()
-    logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start) / 60} minutes')
-
+    logger.info(f'Done. Total docs: {docs_indexed} in {(finish - start)/60} minutes')
 
 if __name__ == "__main__":
     main()
