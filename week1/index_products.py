@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # From https://github.com/dshvadskiy/search_with_machine_learning_course/blob/main/index_products.py
 import opensearchpy
 import requests
@@ -8,10 +9,10 @@ import glob
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 import logging
+import json
 
 from time import perf_counter
 import concurrent.futures
-
 
 
 logger = logging.getLogger(__name__)
@@ -85,7 +86,14 @@ def get_opensearch():
     port = 9200
     auth = ('admin', 'admin')
     #### Step 2.a: Create a connection to OpenSearch
-    client = None
+    client = OpenSearch(
+        hosts=[{"host": host, "port": port}],
+        http_auth=auth,
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False
+    )
     return client
 
 
@@ -103,12 +111,23 @@ def index_file(file, index_name):
             xpath_expr = mappings[idx]
             key = mappings[idx + 1]
             doc[key] = child.xpath(xpath_expr)
-        #print(doc)
+        #print(json.dumps(doc))
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-        the_doc = None
+        the_doc = {
+            "_index": index_name,
+            "_id": doc['productId'][0],
+            "_source": doc
+        }
         docs.append(the_doc)
+        if len(docs) > 2000:
+            bulk(client, docs)
+            docs_indexed += len(docs)
+            docs = []
+    if len(docs) > 0:
+        bulk(client, docs)
+        docs_indexed += len(docs)
 
     return docs_indexed
 

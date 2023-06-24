@@ -13,6 +13,9 @@ services:
     ports:
       - 9200:9200
       - 9600:9600 # required for Performance Analyzer
+    expose:
+      - "9200"
+      - "9600"
     networks:
       - opensearch-net
   

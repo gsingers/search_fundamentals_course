@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 usage()
 {
   echo "Usage: $0 [-y /path/to/python/indexing/code] [-d /path/to/kaggle/best/buy/datasets] [-p /path/to/bbuy/products/field/mappings] [ -q /path/to/bbuy/queries/field/mappings ] [ -g /path/to/write/logs/to ]"
@@ -5,12 +7,13 @@ usage()
   exit 2
 }
 
-PRODUCTS_JSON_FILE="/workspace/search_fundamentals_course/opensearch/bbuy_products.json"
-QUERIES_JSON_FILE="/workspace/search_fundamentals_course/opensearch/bbuy_queries.json"
-DATASETS_DIR="/workspace/datasets"
-PYTHON_LOC="/workspace/search_fundamentals_course/week1"
+WORKSPACE="/Users/Z001PL0/Documents/corise"
+PRODUCTS_JSON_FILE="$WORKSPACE/search_fundamentals_course/opensearch/bbuy_products.json"
+QUERIES_JSON_FILE="$WORKSPACE/search_fundamentals_course/opensearch/bbuy_queries.json"
+DATASETS_DIR="$WORKSPACE/datasets"
+PYTHON_LOC="$WORKSPACE/search_fundamentals_course/week1"
 
-LOGS_DIR="/workspace/logs"
+LOGS_DIR="$WORKSPACE/logs"
 
 while getopts ':p:q:g:y:d:h' c
 do
@@ -30,14 +33,14 @@ mkdir $LOGS_DIR
 
 echo "Creating index settings and mappings"
 echo " Product file: $PRODUCTS_JSON_FILE"
-curl -k -X PUT -u admin  "https://localhost:9200/bbuy_products" -H 'Content-Type: application/json' -d "@$PRODUCTS_JSON_FILE"
+curl -k -X PUT -u admin:admin  "https://localhost:9200/bbuy_products" -H 'Content-Type: application/json' -d "@$PRODUCTS_JSON_FILE"
 if [ $? -ne 0 ] ; then
   echo "Failed to create index with settings of $PRODUCTS_JSON_FILE"
   exit 2
 fi
 echo ""
 echo " Query file: $QUERIES_JSON_FILE"
-curl -k -X PUT -u admin  "https://localhost:9200/bbuy_queries" -H 'Content-Type: application/json' -d "@$QUERIES_JSON_FILE"
+curl -k -X PUT -u admin:admin  "https://localhost:9200/bbuy_queries" -H 'Content-Type: application/json' -d "@$QUERIES_JSON_FILE"
 if [ $? -ne 0 ] ; then
   echo "Failed to create index with settings of $QUERIES_JSON_FILE"
   exit 2
