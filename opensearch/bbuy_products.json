@@ -2,13 +2,7 @@
   "mappings": {
     "properties": {
       "active": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "artistName": {
         "type": "text",
@@ -47,7 +41,7 @@
         }
       },
       "categoryPathCount": {
-        "type": "float"
+        "type": "integer"
       },
       "categoryPathIds": {
         "type": "text",
@@ -95,22 +89,10 @@
         }
       },
       "digital": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "homeDelivery": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "image": {
         "type": "text",
@@ -122,13 +104,7 @@
         }
       },
       "inStoreAvailability": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "inStorePickup": {
         "type": "text",
@@ -158,22 +134,10 @@
         }
       },
       "onSale": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "onlineAvailability": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
+        "type": "boolean"
       },
       "productId": {
         "type": "text",
