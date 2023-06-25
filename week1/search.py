@@ -111,10 +111,21 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "match_all": {
+                "query_string": {
+                    "query": user_query
+                    "fields": ["name^100", "shortDescription^50", "longDescription^10"],
+                    "phrase_slop": 2, # check 3
+                    "filter": process_filters(filters),
+                }
+            } # Replace me with a query that both searches and filters
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
+            "department": {
+                "terms": {
+                }
+            }
 
         }
     }
