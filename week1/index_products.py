@@ -97,19 +97,6 @@ def get_opensearch():
         ssl_show_warn=False,
     )
 
-    index_name = 'bby_search_bulk'
-    index_body = {
-        'settings': {
-            'index': {
-                'query': {
-                    'default_field': "body"
-                }
-            }
-        }
-    }
-
-    client.indices.create(index_name, body=index_body)
-
     return client
 
 
@@ -131,6 +118,7 @@ def index_file(file, index_name):
         if 'productId' not in doc or len(doc['productId']) == 0:
             continue
         #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
+        doc['_index'] = index_name
         the_doc = doc
         docs.append(the_doc)
         if len(docs) == 2000:
@@ -148,9 +136,9 @@ def index_file(file, index_name):
 @click.option('--workers', '-w', default=8, help="The number of workers to use to process files")
 def main(source_dir: str, index_name: str, workers: int):
 
-    # files = glob.glob(source_dir + "/*.xml")
+    files = glob.glob(source_dir + "/*.xml")
     # DELETE the line below and uncomment the line above when want to run on more data
-    files = glob.glob(source_dir + "/products_0002_430439_to_518210.xml")
+    # files = glob.glob(source_dir + "/products_011*.xml")
     docs_indexed = 0
     start = perf_counter()
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
