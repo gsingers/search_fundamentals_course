@@ -94,7 +94,12 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(
+        body=query_obj,
+        index="bbuy_products"    
+    )
+
+   # TODO: Replace me with an appropriate call to OpenSearch
     # Postprocess results here if you so desire
 
     #print(response)
@@ -111,10 +116,61 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
+            "query_string":{
+                "fields":[“name”, “shortDescription”, “longDescription”],
+                "query": user_query,
+                "phrase_slop": 3
+            },
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"match_all": {}}
+                        ],
+                        "filter": filters
+                    }
+                }
+            },
             "match_all": {} # Replace me with a query that both searches and filters
+        },
+        "sort":[“regularPrice”, "name.keyword"],
+        "highlight": {
+            "fields": {
+                “name”: {},
+                "shortDescription":{},
+                "longDescription":{}
+            }
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {
+                            "to": 5
+                        },
+                        {
+                            "from": 5,
+                            "to": 20
+                        },
+                        {
+                            "from": 20,
+                        }
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department",
+                    "size": 10,
+                    "min_doc_count": 0
+                }
+            },
+            "missing_images": {
+                "missing": {"field": "image" }
+            }
+
 
         }
     }
