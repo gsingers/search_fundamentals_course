@@ -1,4 +1,11 @@
 # From https://github.com/dshvadskiy/search_with_machine_learning_course/blob/main/index_products.py
+# snippet needed so that client_util imports works
+import sys
+import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+# snippet needed so that client_util imports works
 import opensearchpy
 import requests
 from lxml import etree
@@ -12,7 +19,7 @@ import logging
 from time import perf_counter
 import concurrent.futures
 
-from .client_util import create_opensearch_client
+from week1.client_util import create_opensearch_client
 
 
 
@@ -109,7 +116,6 @@ def index_file(file, index_name):
         docs.append(the_doc)
 
         if docs_indexed == 2000:
-            # do indexing work
             bulk(client, docs)
             docs = []
 

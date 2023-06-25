@@ -9,7 +9,8 @@ def create_opensearch_client():
         hosts=[{'host': host, 'port': port}],
         http_compress = True,
         http_auth = auth,
-        verify_certs = True,
+        use_ssl=True,
+        verify_certs = False,
         ssl_assert_hostname = False,
         ssl_show_warn = False
     )
