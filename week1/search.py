@@ -116,7 +116,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                    { 
                         "query_string": {
                             "query": user_query,
-                            "fields": ["name^100", "shortDescription^50", "longDescription^10"],
+                            "fields": [ "name^100", "shortDescription^50", "longDescription^10", "department" ],
                             "phrase_slop": 2, # check 3
                         }
                     }
@@ -133,8 +133,9 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                         { "key": "$", "to": 250 },
                         { "key": "$$", "from": 250, "to": 500 },
                         { "key": "$$$", "from": 500, "to": 750 },
-                        { "key": "$$$$", "from": 750, "to": 100 },
-                        { "key": "$$$$$", "from": 1000 },
+                        { "key": "$$$$", "from": 750, "to": 1000 },
+                        { "key": "$$$$$", "from": 1000, "to": 5000 },
+                        { "key": "$$$$$$", "from": 5000 },
                     ]
                 },
                 "aggs": {
@@ -162,9 +163,9 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             }
         },
         "sort": [
-            { "regularPrice": { "order": sortDir } },
-            { "name.keyword": { "order": sortDir } },
             { sort: { "order": sortDir } }
+            # { "regularPrice": { "order": sortDir } },
+            # { "name.keyword": { "order": sortDir } },
         ]
     }
     return query_obj
