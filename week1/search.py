@@ -116,27 +116,28 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "query_string":{
-                "fields":[“name”, “shortDescription”, “longDescription”],
-                "query": user_query,
-                "phrase_slop": 3
-            },
             "function_score": {
                 "query": {
                     "bool": {
                         "must": [
-                            {"match_all": {}}
+                            {
+                                "query_string" : {
+                                    "query": user_query,
+                                    "phrase_slop": 3,
+                                    "fields" : ["shortDescription", "longDescription", "name"]
+                                }
+                            }
+
                         ],
                         "filter": filters
                     }
                 }
-            },
-            "match_all": {} # Replace me with a query that both searches and filters
+            }
         },
-        "sort":[“regularPrice”, "name.keyword"],
+        "sort":[{"regularPrice":sortDir}, {"name.keyword":sortDir}],
         "highlight": {
             "fields": {
-                “name”: {},
+                "name": {},
                 "shortDescription":{},
                 "longDescription":{}
             }
@@ -162,13 +163,13 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             },
             "department": {
                 "terms": {
-                    "field": "department",
+                    "field": "department.keyword",
                     "size": 10,
                     "min_doc_count": 0
                 }
             },
             "missing_images": {
-                "missing": {"field": "image" }
+                "missing": {"field": "image.keyword" }
             }
 
 
