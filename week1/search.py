@@ -111,18 +111,47 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "bool": {
-                "must": [
-                   { 
-                        "query_string": {
-                            "query": user_query,
-                            "fields": [ "name^100", "shortDescription^50", "longDescription^10", "department" ],
-                            "phrase_slop": 2, # check 3
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                        { 
+                                "query_string": {
+                                    "query": user_query,
+                                    "fields": [ "name^100", "shortDescription^50", "longDescription^10", "department" ],
+                                    "phrase_slop": 3,
+                                }
+                            }
+                        ],
+                        "filter": filters,
+                    }
+                },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                    {
+                        "field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                        "field": "salesRankShortTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
                         }
                     }
-                ],
-                "filter": filters,
-            }# Replace me with a query that both searches and filters
+                ]
+            }
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here\
@@ -137,11 +166,6 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                         { "key": "$$$$$", "from": 1000, "to": 5000 },
                         { "key": "$$$$$$", "from": 5000 },
                     ]
-                },
-                "aggs": {
-                    "price_stats": {
-                        "stats": { "field": "regularPrice"}
-                    }
                 }
             },
             "department": {
@@ -164,8 +188,6 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         },
         "sort": [
             { sort: { "order": sortDir } }
-            # { "regularPrice": { "order": sortDir } },
-            # { "name.keyword": { "order": sortDir } },
         ]
     }
     return query_obj
