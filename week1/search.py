@@ -134,7 +134,10 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                 }
             }
         },
-        "sort":[{"regularPrice":sortDir}, {"name.keyword":sortDir}],
+        "sort": [
+            { sort: { "order": sortDir } }
+        ],
+        # "sort":[{"regularPrice":sortDir}, {"name.keyword":sortDir}],
         "highlight": {
             "fields": {
                 "name": {},
