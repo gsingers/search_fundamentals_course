@@ -131,13 +131,37 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                         ],
                         "filter": filters
                     }
-                }
+                },
+                "boost_mode": "multiply",
+                "score_mode": "avg",
+                "functions": [
+                    {
+                    "field_value_factor": {
+                        "field": "salesRankLongTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                    }
+                    },
+                    {
+                    "field_value_factor": {
+                        "field": "salesRankMediumTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                    }
+                    },
+                    {
+                    "field_value_factor": {
+                        "field": "salesRankShortTerm",
+                        "missing": 100000000,
+                        "modifier": "reciprocal"
+                    }
+                    }
+                ]
             }
         },
         "sort": [
             { sort: { "order": sortDir } }
         ],
-        # "sort":[{"regularPrice":sortDir}, {"name.keyword":sortDir}],
         "highlight": {
             "fields": {
                 "name": {},
