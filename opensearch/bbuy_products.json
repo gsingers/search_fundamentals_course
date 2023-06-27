@@ -41,13 +41,7 @@
           }
         },
         "bestSellingRank": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "float"
         },
         "categoryLeaf": {
           "type": "text",
@@ -349,31 +343,13 @@
           }
         },
         "salesRankLongTerm": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "float"
         },
         "salesRankMediumTerm": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "float"
         },
         "salesRankShortTerm": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
+          "type": "float"
         },
         "shippingCost": {
           "type": "text",

@@ -124,7 +124,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                                 "query_string" : {
                                     "query": user_query,
                                     "phrase_slop": 3,
-                                    "fields" : ["shortDescription", "longDescription", "name"]
+                                    "fields" : ["shortDescription^50", "longDescription^10", "name^100", "department"]
                                 }
                             }
 
