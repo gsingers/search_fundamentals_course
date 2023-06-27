@@ -14,7 +14,13 @@
         }
       },
       "bestBuyItemId": {
-        "type": "integer"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "categoryLeaf": {
         "type": "text",
@@ -58,6 +64,18 @@
       "classId": {
         "type": "integer"
       },
+      "salesRankShortTerm": {
+        "type": "integer"
+      },
+      "salesRankMediumTerm": {
+        "type": "integer"
+      },
+      "salesRankLongTerm": {
+        "type": "integer"
+      },
+      "bestSellingRank": {
+        "type": "integer"
+      },
       "department": {
         "type": "text",
         "fields": {
@@ -68,7 +86,13 @@
         }
       },
       "departmentId": {
-        "type": "integer"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "digital": {
         "type": "boolean"
@@ -116,7 +140,13 @@
         "type": "boolean"
       },
       "productId": {
-        "type": "integer"
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
       },
       "quantityLimit": {
         "type": "integer"
