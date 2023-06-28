@@ -43,19 +43,16 @@ def main(source_file: str, index_name: str):
     docs = []
     tic = time.perf_counter()
     for idx, row in ds.iterrows():
-        if isinstance(row['category'], float) or row['category'].isdigit():
-            logger.info(f'bad category value: {row["category"]}')
-            continue
         doc = {}
         for col in ds.columns:
             doc[col] = row[col]
         docs.append({'_index': index_name , '_source': doc})
         if idx % 1000 == 0:
-            bulk(client, docs, request_timeout=60)
+            bulk(client, docs, request_timeout=60, raise_on_error=False)
             logger.info(f'{idx} documents indexed')
             docs = []
     if len(docs) > 0:
-        bulk(client, docs, request_timeout=60)
+        bulk(client, docs, request_timeout=60, raise_on_error=False)
     toc = time.perf_counter()
     logger.info(f'Done indexing {ds.shape[0]} records. Total time: {((toc-tic)/60):0.3f} mins.')
 
