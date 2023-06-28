@@ -113,10 +113,17 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
         "query": {
             "function_score": {
                 "query": {
-                    "query_string": {
-                        "query": user_query,
-                        "fields": ["name^1000", "shortDescription^50", "longDescription^10", "department"],
-                        "phrase_slop": 3
+                    "bool": {
+                        "must": [
+                            {
+                                "query_string": {
+                                    "query": user_query,
+                                    "fields": ["name^1000", "shortDescription^50", "longDescription^10", "department"],
+                                    "phrase_slop": 3
+                                }
+                            }
+                        ],
+                        "filter": filters
                     }
                 },
                 "boost_mode": "multiply",
@@ -168,18 +175,27 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                     "field": "regularPrice",
                     "ranges": [
                         {
-                            "to": 5
+                            "to": 10,
+                            "key": "$"
                         },
                         {
-                            "from": 5,
-                            "to": 25
+                            "from": 10,
+                            "to": 100,
+                            "key": "$$"
                         },
                         {
-                            "from": 25,
-                            "to": 50
+                            "from": 100,
+                            "to": 500,
+                            "key": "$$$"
                         },
                         {
-                            "from": 50
+                            "from": 500,
+                            "to": 1000,
+                            "key": "$$$$"
+                        },
+                        {
+                            "from": 1000,
+                            "key": "$$$$$"
                         }
                     ]
                 }
