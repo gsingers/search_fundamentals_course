@@ -35,10 +35,10 @@ def get_opensearch():
 @click.option('--index_name', '-i', default="bbuy_queries", help="The name of the index to write to")
 def main(source_file: str, index_name: str):
     client = get_opensearch()
-    ds = pd.read_csv(source_file)
-    #print(ds.columns)
-    ds['click_time'] = pd.to_datetime(ds['click_time'])
-    ds['query_time'] = pd.to_datetime(ds['query_time'])
+    ds = pd.read_csv(source_file, keep_default_na=False) # add keep_default_na to prevent Non-standard token BulkIndexError
+    # print(ds.columns)
+    ds['click_time'] = pd.to_datetime(ds['click_time'], dayfirst=True, format='mixed') # adding format and dayfirst args to allow conversion of mixed fields (i.e. where millisecond values are absent)
+    ds['query_time'] = pd.to_datetime(ds['query_time'], dayfirst=True, format='mixed') # adding format and dayfirst args to allow conversion of mixed fields (i.e. where millisecond values are absent)
     #print(ds.dtypes)
     docs = []
     tic = time.perf_counter()
