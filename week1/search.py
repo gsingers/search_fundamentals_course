@@ -94,7 +94,7 @@ def query():
     print("query obj: {}".format(query_obj))
 
     #### Step 4.b.ii
-    response = None   # TODO: Replace me with an appropriate call to OpenSearch
+    response = opensearch.search(index='bbuy_products', body=query_obj)
     # Postprocess results here if you so desire
 
     #print(response)
@@ -111,11 +111,53 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
     query_obj = {
         'size': 10,
         "query": {
-            "match_all": {} # Replace me with a query that both searches and filters
+            "bool": {
+                "must":  {
+                    "query_string": {
+                        "query": user_query,
+                        "fields": ["name", "shortDescription", "longDescription"],
+                        "phrase_slop": 3
+                    }
+                },
+                "filter": filters
+            }
         },
         "aggs": {
             #### Step 4.b.i: create the appropriate query and aggregations here
-
-        }
+            "regularPrice": {
+                "range": {
+                    "field": "regularPrice",
+                    "ranges": [
+                        {"key": "$", "to": 200},
+                        {"key": "$$", "from": 200, "to": 400},
+                        {"key": "$$$", "from": 400, "to": 700},
+                        {"key": "$$$$", "from": 700, "to": 1000},
+                        {"key": "$$$$$", "from": 1000, "to": "2000"},
+                        {"key": "$$$$$$", "from": 2000},
+                    ]
+                }
+            },
+            "department": {
+                "terms": {
+                    "field": "department.keyword"
+                }
+            },
+            "missing_images": {
+                "missing": {
+                    "field": "images"
+                }
+            }
+        },
+        "highlight": {
+            "fields": {
+                "name": {},
+                "shortDescription": {},
+                "longDescription": {}
+            }
+        },
+        "sort": [
+            {"name.keyword": {"order": sortDir}},
+            {"regularPrice": {"order": sortDir}}
+        ]
     }
     return query_obj
