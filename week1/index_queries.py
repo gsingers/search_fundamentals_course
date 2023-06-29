@@ -48,7 +48,8 @@ def main(source_file: str, index_name: str):
             doc[col] = row[col]
         docs.append({'_index': index_name , '_source': doc})
         if idx % 1000 == 0:
-            bulk(client, docs, request_timeout=60)
+            bulk(client, docs, request_timeout=60, raise_on_error=False)
+            # bulk(client, docs, request_timeout=60)
             logger.info(f'{idx} documents indexed')
             docs = []
     if len(docs) > 0:
