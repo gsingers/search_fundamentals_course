@@ -264,7 +264,7 @@
         "fields": {
           "trigrams":{
             "type":"text",
-            "analyzer":"trigrams"
+            "analyzer":"trigram"
           },
           "text":{
             "type":"text",
