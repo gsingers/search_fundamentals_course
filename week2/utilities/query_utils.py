@@ -169,12 +169,7 @@ def add_spelling_suggestions(query_obj, user_query):
                     "field" : "suggest.trigrams",
                     "suggest_mode" : "popular",
                     "min_word_length" :  2
-                    } ],
-                "highlight" : {
-                    "pre_tags": ["<b>"], 
-                    "post_tags": ["</b>"], 
-                    "fields" : {"name"}
-                }
+                    } ]
             }
         },
         "term_suggest": {
