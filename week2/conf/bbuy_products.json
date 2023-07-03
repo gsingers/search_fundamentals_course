@@ -254,8 +254,7 @@
           },
           "hyphens": {
             "type":"text",
-            "analyzer":"smarter_hyphens",
-            "ignore_above":2048
+            "analyzer":"smarter_hyphens"
           }
         }
       },
