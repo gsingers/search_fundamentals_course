@@ -253,7 +253,7 @@
             "ignore_above": 2048
           },
           "hyphens": {
-            "type:":"text",
+            "type":"text",
             "analyzer":"smarter_hyphens",
             "ignore_above":2048
           }
