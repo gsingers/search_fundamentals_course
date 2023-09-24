@@ -37,8 +37,8 @@ def main(source_file: str, index_name: str):
     client = get_opensearch()
     ds = pd.read_csv(source_file)
     #print(ds.columns)
-    ds['click_time'] = pd.to_datetime(ds['click_time'])
-    ds['query_time'] = pd.to_datetime(ds['query_time'])
+    ds['click_time'] = pd.to_datetime(ds['click_time'], format='ISO8601')
+    ds['query_time'] = pd.to_datetime(ds['query_time'], format='ISO8601')
     #print(ds.dtypes)
     docs = []
     tic = time.perf_counter()
@@ -48,11 +48,11 @@ def main(source_file: str, index_name: str):
             doc[col] = row[col]
         docs.append({'_index': index_name , '_source': doc})
         if idx % 1000 == 0:
-            bulk(client, docs, request_timeout=60)
+            bulk(client, docs, request_timeout=60, raise_on_error=False)
             logger.info(f'{idx} documents indexed')
             docs = []
     if len(docs) > 0:
-        bulk(client, docs, request_timeout=60)
+        bulk(client, docs, request_timeout=60, raise_on_error=False)
     toc = time.perf_counter()
     logger.info(f'Done indexing {ds.shape[0]} records. Total time: {((toc-tic)/60):0.3f} mins.')
 
