@@ -19,7 +19,10 @@
             {{ hit._source.name[0] }}
           {% endif %}
         </div>
-          <div class="py-2"><span class="search-result-header">ID</span>: {{ hit._source.productId[0] }}</div>
+          <div class="py-2">
+              <span class="search-result-header">ID</span>: {{ hit._source.productId[0] }} |
+              <span class="search-result-header">SKU</span>: {{ hit._source.sku[0] }}
+          </div>
           <div>
             {% if hit._source.longDescription %}
               {#do we have a highlight?#}

@@ -5,7 +5,7 @@ quickly get up to speed on search by teaching the basics of search like indexing
 
 The class is a hands-on project-driven course where students will work with real data and the [Opensearch](https://opensearch.com)/Elasticsearch ecosystem.
 
-# Class code layout (e.g. where the projects are)
+## Class code layout (e.g. where the projects are)
 
 For our class, we have two weekly projects.  Each project
 is a standalone Python Flask application that interacts with an OpenSearch server (and perhaps other services).  
@@ -25,13 +25,13 @@ You will also find several supporting directories and files for [Docker](https:/
 
 You can also use the included `Makefile` to interact with the project, including running pyenv, Flask, and re-indexing the data. Run all `make` commands at the root of the repo so Makefile can pick them up, i.e. `/workspace/search_fundamentals_course`.
 
-# Prerequisites
+## Prerequisites
 
 1. For this class, you will need a Kaggle account and a [Kaggle API token](https://www.kaggle.com/docs/api).
 1. No prior search knowledge is required, but you should be able to code in Python or Java (all examples are in Python)
 1. You will need a [Gitpod](https://gitpod.io) account.
 
-# Working in Gitpod (Officially Supported)
+## Working in Gitpod (Officially Supported)
 
 1. Fork this repository.
 1. Launch a new Gitpod workspace based on this repository.  This will automatically start OpenSearch and OpenSearch Dashboards.
@@ -41,9 +41,9 @@ You can also use the included `Makefile` to interact with the project, including
 
         $GITPOD_URL is a placeholder for your ephemeral Gitpod host name, e.g. silver-grasshopper-8czadqyn.ws-us25.gitpod.io     
 
-# Downloading the Best Buy Dataset
+## Downloading the Best Buy Dataset
 
-1. Run the install [Kaggle API token](https://www.kaggle.com/docs/api) script and follow the instructions:
+1. Run the install [Kaggle API token](https://www.kaggle.com/docs/api) script and follow the instructions (this step is not need if running the project locally):
 
         ./install-kaggle-token.sh
 2. Accept all of the [kaggle competition rules](https://www.kaggle.com/c/acm-sf-chapter-hackathon-big/rules) then run the download data script:
@@ -83,10 +83,26 @@ Note: these have only been tested on a Mac running OS 12.2.1.  YMMV.  Much of wh
 
 1. `pyenv install 3.9.7`
 2. `pip install` all of the libraries you see in `.gitpod.Dockerfile`
-3. Setup your weekly python environments per the "Weekly Project" above.
-4. Run OpenSearch: 
+3. Under the project root, duplicate the file `env.dist` and name it `.env` (the dot means this is a hidden file).
+4. Fill in the missing environment variables and make sure the existing ones are correct.
+5. Setup Kaggle credentials file and download data.
+    * Obtain and credential files and place it at `~/.kaggle/kaggle.json` 
+    * chmod 600 ~/.kaggle/kaggle.json
+    * Accept all of the [kaggle competition rules](https://www.kaggle.com/c/acm-sf-chapter-hackathon-big/rules) then run the download data script:
+    * ./download-data.sh (or `make download`)
+    * Verify your data is in the right location: `ls <datasets location>`
+    * You should see:  `popular_skus.py  product_data  test.csv  train.csv`
+7. Set up your weekly python environments per the "Weekly Project" above.
+8. Run OpenSearch: 
     A. `cd docker`
     B. `docker-compose up`
-5. Note: most of the scripts and projects assume the data is in `/workspace/datasets`, but have overrides to specify your own directories. You will need to download and plan accordingly.  
-6. Do your work per the Weekly Project     
-    
+9. Index data into Opensearch: 
+```
+./local_dev.sh
+```
+10. Do your work per the Weekly Project     
+   
+### Stop the Indexing Process Manually
+```
+./stop-indexing.sh
+```

@@ -6,17 +6,24 @@ export FLASK_ENV := development
 export WEEK1 := week1
 export WEEK2 := week2
 
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 SHELL:=/bin/bash
-VENV_DIR=$(shell pyenv root)/versions/search_fundamentals
-PYTHON=${VENV_DIR}/bin/python
+
+ifndef PYTHON_BIN
+PYTHON_BIN=$(shell pyenv root)/versions/search_fundamentals/bin/python
+endif
 
 week1: 
 	@eval "$$(pyenv init -)" && \
-	FLASK_ENV=$(FLASK_ENV) FLASK_APP=$(WEEK1) $(PYTHON) -m flask run --port 3000 
+	FLASK_ENV=$(FLASK_ENV) FLASK_APP=$(WEEK1) $(PYTHON_BIN) -m flask run --port 3000
 
 week2: 
 	@eval "$$(pyenv init -)" && \
-	FLASK_ENV=$(FLASK_ENV) FLASK_APP=$(WEEK2) $(PYTHON) -m flask run --port 3000 
+	FLASK_ENV=$(FLASK_ENV) FLASK_APP=$(WEEK2) $(PYTHON_BIN) -m flask run --port 3000
 
 index: 
 	./index-data.sh

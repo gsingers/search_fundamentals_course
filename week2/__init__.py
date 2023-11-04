@@ -1,7 +1,6 @@
 import os
 
 from flask import Flask
-from flask import render_template
 import pandas as pd
 
 def create_app(test_config=None):
@@ -18,7 +17,8 @@ def create_app(test_config=None):
             priors_gb = priors.groupby("query")
             app.config["priors_df"] = priors
             app.config["priors_gb"] = priors_gb
-        #print(app.config)
+        else:
+            raise RuntimeError("Unable to load train.csv")
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
